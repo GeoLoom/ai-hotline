@@ -1,0 +1,29 @@
+{
+  "name": "ai-hotline",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "zip": "zip -j lambda.zip dist/index.js",
+    "update": "aws lambda update-function-code --zip-file fileb://lambda.zip --function-name hello",
+    "deploy": "run-s build zip update",
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "ingest": "tsx src/ingestion/ingestIncidents.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^25.4.0",
+    "esbuild": "^0.21.4",
+    "npm-run-all2": "^6.2.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.19.11",
+    "axios": "^1.13.5",
+    "better-sqlite3": "^12.6.2",
+    "chromadb": "^3.3.2",
+    "dotenv": "^17.3.1",
+    "hono": "^4.12.7",
+    "zod": "^4.3.6"
+  }
+}
