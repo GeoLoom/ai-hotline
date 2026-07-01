@@ -55,4 +55,7 @@ API RAG (Retrieval-Augmented Generation) pour la gestion d'incidents, basée sur
         config.ts     # Configuration via variables d'environnement
         db.ts         # Base SQLite locale
       ```
+<<<<<<< HEAD
     
+=======
+>>>>>>> 1f86d45 (add .env.example and gitignore)

@@ -1,13 +1,14 @@
 # Dépendances Node.js
 node_modules/
 
-# Variables d'environnement (secrets, clés API, mots de passe)
+# Variables d'env
 .env
 .env.local
 .env.*.local
 .env.development
 .env.production
 .env.test
+!.env.example
 
 # Build output
 dist/
@@ -21,7 +22,7 @@ out/
 chroma_db/
 chroma_db
 
-# Fichiers de données brutes (peuvent contenir des données sensibles)
+# Tout fichier dans data sont sensible on les ignore
 data/raw/
 data/processed/
 
