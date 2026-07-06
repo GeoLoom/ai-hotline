@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { retrieveSimilarIncidents } from '../rag/retriever.js';
 import { buildSupportPrompt } from '../rag/promptBuilder.js';
 import { generateAnswer } from '../services/ollama.js';
+import type { Context } from 'hono';   
 
 const app = new Hono();
 
@@ -18,11 +19,24 @@ const feedbackSchema = z.object({
   comment: z.string().optional()
 });
 
-app.post('/answer', async (c) => {
-  const body = await c.req.json();
-  const parsed = answerSchema.safeParse(body);
+async function parseJsonBody(c: Context): Promise<{ ok: true; data: unknown } | { ok: false }> {
+  try {
+    return { ok: true, data: await c.req.json() };
+  } catch {
+    return { ok: false };
+  }
+}
 
-  if (!parsed.success) {
+
+app.post('/answer', async (c) => {
+  const body = await parseJsonBody(c);
+  if (!body.ok) {
+    return c.json({ error: 'Invalid JSON body' }, 400);
+  }
+
+  const parsed = answerSchema.safeParse(body.data);
+ 
+   if (!parsed.success) {
     return c.json({ error: parsed.error.flatten() }, 400);
   }
 
@@ -43,8 +57,13 @@ app.post('/answer', async (c) => {
 });
 
 app.post('/feedback', async (c) => {
-  const body = await c.req.json();
-  const parsed = feedbackSchema.safeParse(body);
+  
+  const body = await parseJsonBody(c);
+  if (!body.ok) {
+    return c.json({ error: 'Invalid JSON body' }, 400);
+  }
+
+  const parsed = feedbackSchema.safeParse(body.data)
 
   if (!parsed.success) {
     return c.json({ error: parsed.error.flatten() }, 400);
@@ -63,5 +82,12 @@ app.post('/ingest', async (c) => {
     message: 'Prefer running ingestion through npm run ingest for batch indexing'
   });
 });
+
+
+app.onError((err, c) => {
+  console.error('[ai-hotline] Erreur non gérée:', err);
+  return c.json({ error: 'Internal server error' }, 500);
+});
+
 
 export default app;
