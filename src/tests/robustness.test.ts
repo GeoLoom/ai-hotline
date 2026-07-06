@@ -25,7 +25,7 @@ describe('robustesse — API /answer', () => {
   });
 
   it('accepte une question très longue sans planter', async () => {
-    const longQuestion = 'Erreur de préparation répétée '.repeat(200);
+    const longQuestion = 'Erreur de préparation répétée sur le pool '.repeat(40);
 
     const res = await app.request('/answer', {
       method: 'POST',
@@ -37,12 +37,23 @@ describe('robustesse — API /answer', () => {
   });
 
 
+  it('rejette une question dépassant la limite de 2000 caractères', async () => {
+    const tooLongQuestion = 'Erreur de préparation répétée sur le quai '.repeat(60);
+
+    const res = await app.request('/answer', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question: tooLongQuestion }),
+    });
+
+    expect(res.status).toBe(400);
+  });
 
   it('gère correctement les caractères unicode et emojis', async () => {
     const res = await app.request('/answer', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question: 'Erreur étrange 🚨 à Lyon, é/à/ü' }),
+      body: JSON.stringify({ question: 'Erreur étrange 🚨  à Lyon, é/à/ü' }),
     });
 
     expect(res.status).toBe(200);
@@ -54,7 +65,7 @@ describe('robustesse — API /answer', () => {
     const res = await app.request('/answer', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question: 'Question quelconque valide' }),
+      body: JSON.stringify({ question: 'Erreur bloquante sur le scanner du pool de préparation' }),
     });
 
     expect(consoleErrorSpy).toHaveBeenCalled();
@@ -66,20 +77,20 @@ describe('robustesse — API /answer', () => {
     const res = await app.request('/answer', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question: 'Question quelconque valide' }),
+      body: JSON.stringify({ question: 'Erreur bloquante sur le scanner du pool de préparation' }),
     });
 
     expect(consoleErrorSpy).toHaveBeenCalled();
   });
 
-  it('révèle un cas non couvert par le schéma : une question composée uniquement d’espaces est acceptée', async () => {
+  it('rejette une question composée uniquement d’espaces (grâce au .trim())', async () => {
     const res = await app.request('/answer', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ question: '   ' }),
     });
 
-    expect(res.status).toBe(200);
+    expect(res.status).toBe(400);
   });
 });
 

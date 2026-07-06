@@ -27,6 +27,9 @@ vi.mock('../services/ollama.js', () => ({
   generateAnswer: vi.fn(async () => 'Réponse IA structurée'),
 }));
 
+vi.mock('../db', () => ({
+  insertFeedback: vi.fn(),
+}));
 
 describe('API routes', () => {
   describe('POST /answer', () => {
@@ -152,4 +155,14 @@ describe('API routes', () => {
       expect(body.message).toContain('npm run ingest');
     });
   });
+
+  it('expose également les routes sous le préfixe /v1', async () => {
+  const res = await app.request('/v1/answer', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ question: 'Erreur scanner sur le quai de préparation' }),
+  });
+
+  expect(res.status).toBe(200);
+});
 });

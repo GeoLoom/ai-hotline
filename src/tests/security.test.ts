@@ -15,6 +15,9 @@ vi.mock('../services/ollama', () => ({
   generateAnswer: vi.fn(async () => 'Réponse IA'),
 }));
 
+vi.mock('../db', () => ({
+  insertFeedback: vi.fn(),
+}));
 
 describe('sécurité — API /answer et /feedback', () => {
   it('renvoie une 400 propre sur un corps JSON malformé (au lieu d’une 500 générique)', async () => {
@@ -49,7 +52,7 @@ describe('sécurité — API /answer et /feedback', () => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        question: 'Question valide et suffisamment longue',
+        question: 'Question valide concernant une erreur de stock en préparation',
         admin: true,
         __proto__: { polluted: true },
       }),
