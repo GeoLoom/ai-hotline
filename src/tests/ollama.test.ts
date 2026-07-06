@@ -1,6 +1,16 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { generateAnswer, generateEmbedding } from '../services/ollama';
 
+
+vi.mock('../config', () => ({
+  config: {
+    ollamaBaseUrl: 'http://fake-ollama:11434',
+    ollamaChatModel: 'phi3',
+    ollamaEmbedModel: 'nomic-embed-text',
+  },
+}));
+
+
 describe('ollama service', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
@@ -27,7 +37,7 @@ describe('ollama service', () => {
   });
 
   it('generateEmbedding appelle le modèle nomic-embed-text', async () => {
-    const fetchMock = vi.fn(async () => ({
+    const fetchMock = vi.fn(async (_url: string, _init?: RequestInit) => ({
       ok: true,
       json: async () => ({
         embedding: [0.1],
@@ -38,10 +48,11 @@ describe('ollama service', () => {
 
     await generateEmbedding('texte test');
 
-    const body = JSON.parse(fetchMock.mock.calls[0][1].body);
+    const body = JSON.parse(fetchMock.mock.calls[0][1]!.body as string);
 
     expect(body.model).toBe('nomic-embed-text');
     expect(body.prompt).toBe('texte test');
+    expect(fetchMock.mock.calls[0][0]).toBe('http://fake-ollama:11434/api/embeddings');
   });
 
   it('generateAnswer retourne une réponse texte', async () => {
@@ -61,7 +72,7 @@ describe('ollama service', () => {
   });
 
   it('generateAnswer appelle le modèle phi3', async () => {
-    const fetchMock = vi.fn(async () => ({
+    const fetchMock = vi.fn(async (_url: string, _init?: RequestInit) => ({
       ok: true,
       json: async () => ({
         response: 'OK',
@@ -72,7 +83,7 @@ describe('ollama service', () => {
 
     await generateAnswer('prompt test');
 
-    const body = JSON.parse(fetchMock.mock.calls[0][1].body);
+    const body = JSON.parse(fetchMock.mock.calls[0][1]!.body as string);
 
     expect(body.model).toBe('phi3');
     expect(body.prompt).toBe('prompt test');
@@ -90,5 +101,18 @@ describe('ollama service', () => {
     );
 
     await expect(generateAnswer('prompt')).rejects.toThrow('Ollama generate failed');
+  });
+
+  it('generateEmbedding lève une erreur si Ollama retourne une erreur', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => ({
+        ok: false,
+        status: 503,
+        text: async () => 'Service indisponible',
+      }))
+    );
+
+    await expect(generateEmbedding('texte test')).rejects.toThrow('Ollama embeddings failed');
   });
 });

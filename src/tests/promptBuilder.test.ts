@@ -40,4 +40,30 @@ describe('buildSupportPrompt', () => {
 
     expect(prompt).toContain('Do not invent a fix');
   });
+
+  it('retombe sur l’id du document si ticket_id est absent des métadonnées', () => {
+    const prompt = buildSupportPrompt('Question test', [
+      {
+        id: 'doc-sans-ticket-id',
+        text: 'Contenu de secours',
+        score: 0.5,
+        metadata: {},
+      },
+    ]);
+
+    expect(prompt).toContain('Ticket ID: doc-sans-ticket-id');
+  });
+
+
+  it('numérote correctement plusieurs incidents récupérés', () => {
+    const prompt = buildSupportPrompt('Question test', [
+      { id: 'a', text: 'Premier incident', score: 0.9, metadata: { ticket_id: 'INC-1' } },
+      { id: 'b', text: 'Deuxième incident', score: 0.8, metadata: { ticket_id: 'INC-2' } },
+    ]);
+
+    expect(prompt).toContain('### Incident 1');
+    expect(prompt).toContain('INC-1');
+    expect(prompt).toContain('### Incident 2');
+    expect(prompt).toContain('INC-2');
+  });
 });

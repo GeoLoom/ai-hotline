@@ -49,4 +49,16 @@ describe('ingestion incidents', () => {
     expect(incident.echangeTech).toEqual([]);
     expect(incident.cleanedText).toContain('Incident: 999');
   });
+
+  it('remplace les métadonnées manquantes par une chaîne vide dans le chunk', () => {
+    const incident = normalizeIncident({ id: 999 });
+
+    const [chunk] = chunkIncident(incident);
+
+    expect(chunk.metadata.groupe).toBe('');
+    expect(chunk.metadata.site).toBe('');
+    expect(chunk.metadata.application).toBe('');
+    expect(chunk.metadata.date_creation).toBe('');
+    expect(chunk.metadata.source_type).toBe('incident');
+  });
 });

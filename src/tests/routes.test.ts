@@ -83,6 +83,22 @@ describe('API routes', () => {
       expect(buildSupportPrompt).toHaveBeenCalled();
       expect(generateAnswer).toHaveBeenCalledWith('PROMPT_TEST');
     });
+
+    it('fonctionne sans le champ optionnel "application"', async () => {
+      const res = await app.request('/answer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          question: 'Comment résoudre un problème de préparation ?',
+        }),
+      });
+
+      expect(res.status).toBe(200);
+      expect(retrieveSimilarIncidents).toHaveBeenCalledWith(
+        'Comment résoudre un problème de préparation ?',
+        undefined
+      );
+    });
   });
 
   describe('POST /feedback', () => {
