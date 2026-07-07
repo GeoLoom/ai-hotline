@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "^8.5.0",
+    "@chroma-core/default-embed": "^0.1.9",
     "@hono/node-server": "^1.19.11",
     "axios": "^1.13.5",
     "better-sqlite3": "^12.6.2",

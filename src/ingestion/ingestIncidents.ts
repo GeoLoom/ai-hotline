@@ -1,53 +1,56 @@
-import fs from "fs"
-import path from "path"
-import { getCollection } from "../rag/chroma"
-import { generateEmbedding } from "../services/ollama"
+import fs from 'node:fs';
+import path from 'node:path';
+import { getCollection } from '../rag/chroma.js';
+import { normalizeIncident } from '../rag/cleaner.js';
+import { chunkIncident } from '../rag/chunker.js';
+import { embedText } from '../rag/embedder.js';
+import { config } from '../config.js';
+import type { RawIncidentDocument } from '../types/incident.js';
 
 async function main() {
 
   const collection = await getCollection()
 
-  const files = fs.readdirSync("./data/raw")
+  const files = fs.readdirSync(config.dataRawDir);
+
+  let indexedChunks = 0;
+  let failedIncidents = 0;
 
   for (const file of files) {
+    const filePath = path.join(config.dataRawDir, file);
+    const content = fs.readFileSync(filePath, 'utf-8');
+    const json = JSON.parse(content);
 
-    const content = fs.readFileSync(`./data/raw/${file}`, "utf-8")
-    const json = JSON.parse(content)
+    for (const rawDoc of json.documents as RawIncidentDocument[]) {
+      try {
+        const incident = normalizeIncident(rawDoc);
+        const chunks = chunkIncident(incident);
 
-    for (const doc of json.documents) {
+        for (const chunk of chunks) {
+          const embedding = await embedText(chunk.text);
 
-      const text = `
-Incident ${doc.id}
-Application: ${doc.application}
+          await collection.add({
+            ids: [chunk.id],
+            documents: [chunk.text],
+            embeddings: [embedding],
+            metadatas: [chunk.metadata],
+          });
 
-Commentaire:
-${doc.commentaire}
+          indexedChunks++;
+        }
 
-Client:
-${(doc.echange_client || []).join("\n")}
-
-Technique:
-${(doc.echange_tech || []).join("\n")}
-`
-
-      const embedding = await generateEmbedding(text)
-
-      await collection.add({
-        ids: [`incident-${doc.id}`],
-        documents: [text],
-        embeddings: [embedding],
-        metadatas: [{
-          ticket_id: doc.id,
-          application: doc.application
-        }]
-      })
-
-      console.log("Indexed incident", doc.id)
-
+        console.log(`Indexed incident ${incident.ticketId} (${chunks.length} chunk(s))`);
+      } catch (error) {
+        failedIncidents++;
+        console.error(`Échec de l'indexation de l'incident ${rawDoc?.id ?? '?'} :`, error);
+      }
     }
-
   }
 
+  console.log(`\nTerminé : ${indexedChunks} chunk(s) indexé(s), ${failedIncidents} incident(s) en échec.`);
 }
 
-main()
+main().catch((error) => {
+  console.error("Erreur fatale pendant l'ingestion :", error);
+  process.exit(1);
+});
