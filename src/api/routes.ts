@@ -7,8 +7,10 @@ import { answerSchema, feedbackSchema } from './schemas.js';
 import { rateLimiter } from './rateLimiter.js';
 import { insertFeedback } from '../db.js';
 import { checkAuth } from './checkAuth.js';
+import { openApiDocument } from './openapi.js';
 
 //todo attention on rajoute les version à partir de maintenant mais dés interconnection on rajoutera plus de route 
+
 
 const app = new Hono();
 const v1 = new Hono();
@@ -86,10 +88,12 @@ v1.post('/ingest', async (c) => {
 
 
 app.get('/health', (c) => c.json({ status: 'ok' }));
+app.get('/openapi.json', (c) => c.json(openApiDocument));
 
 app.route('/', v1);
-
 app.route('/v1', v1);
+
+
 
 app.onError((err, c) => {
   console.error('[ai-hotline] Erreur non gérée:', err);

@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { normalizeIncident } from '../rag/cleaner';
 import { chunkIncident } from '../rag/chunker';
 
+
 describe('ingestion incidents', () => {
   it('normalise un incident JSON valide', () => {
     const incident = normalizeIncident({
