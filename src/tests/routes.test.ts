@@ -19,6 +19,7 @@ vi.mock('../rag/retriever.js', () => ({
   ]),
 }));
 
+
 vi.mock('../rag/promptBuilder.js', () => ({
   buildSupportPrompt: vi.fn(() => 'PROMPT_TEST'),
 }));
@@ -31,12 +32,17 @@ vi.mock('../db', () => ({
   insertFeedback: vi.fn(),
 }));
 
+vi.mock('../config', () => ({
+  config: { apiToken: 'test-token-123' },
+}));
+
 describe('API routes', () => {
   describe('POST /answer', () => {
     it('retourne 400 si la question est absente', async () => {
       const res = await app.request('/answer', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json',
+          Authorization: 'Bearer test-token-123' },
         body: JSON.stringify({}),
       });
 
@@ -49,7 +55,8 @@ describe('API routes', () => {
     it('retourne 400 si la question est trop courte', async () => {
       const res = await app.request('/answer', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' ,
+          Authorization: 'Bearer test-token-123'},
         body: JSON.stringify({ question: 'ok' }),
       });
 
@@ -59,7 +66,8 @@ describe('API routes', () => {
     it('retourne une réponse IA et les sources pour une question valide', async () => {
       const res = await app.request('/answer', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json',
+          Authorization: 'Bearer test-token-123' },
         body: JSON.stringify({
           question: 'Comment résoudre un problème de préparation ?',
           application: 'WMS',
@@ -90,7 +98,8 @@ describe('API routes', () => {
     it('fonctionne sans le champ optionnel "application"', async () => {
       const res = await app.request('/answer', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json',
+          Authorization: 'Bearer test-token-123' },
         body: JSON.stringify({
           question: 'Comment résoudre un problème de préparation ?',
         }),
@@ -108,7 +117,8 @@ describe('API routes', () => {
     it('retourne 400 si le rating est invalide', async () => {
       const res = await app.request('/feedback', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json',
+          Authorization: 'Bearer test-token-123' },
         body: JSON.stringify({
           question: 'Question test',
           answer: 'Réponse test',
@@ -122,7 +132,8 @@ describe('API routes', () => {
     it('accepte un feedback valide', async () => {
       const res = await app.request('/feedback', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json',
+          Authorization: 'Bearer test-token-123' },
         body: JSON.stringify({
           question: 'Question test',
           answer: 'Réponse test',
@@ -145,6 +156,7 @@ describe('API routes', () => {
     it('retourne un message indiquant d’utiliser npm run ingest', async () => {
       const res = await app.request('/ingest', {
         method: 'POST',
+        headers: { Authorization: 'Bearer test-token-123' },
       });
 
       expect(res.status).toBe(200);
@@ -159,7 +171,8 @@ describe('API routes', () => {
   it('expose également les routes sous le préfixe /v1', async () => {
   const res = await app.request('/v1/answer', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json',
+      Authorization: 'Bearer test-token-123' },
     body: JSON.stringify({ question: 'Erreur scanner sur le quai de préparation' }),
   });
 

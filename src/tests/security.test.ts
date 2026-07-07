@@ -19,11 +19,16 @@ vi.mock('../db', () => ({
   insertFeedback: vi.fn(),
 }));
 
+vi.mock('../config', () => ({
+  config: { apiToken: 'test-token-123' },
+}));
+
 describe('sécurité — API /answer et /feedback', () => {
   it('renvoie une 400 propre sur un corps JSON malformé (au lieu d’une 500 générique)', async () => {
     const res = await app.request('/answer', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json',
+        Authorization: 'Bearer test-token-123' },
       body: '{ ceci n\'est pas du json valide',
     });
 
@@ -36,7 +41,8 @@ describe('sécurité — API /answer et /feedback', () => {
   it('n’exécute jamais un contenu de type script injecté dans la question', async () => {
     const res = await app.request('/answer', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json',
+        Authorization: 'Bearer test-token-123' },
       body: JSON.stringify({
         question: '<script>alert(document.cookie)</script> comment résoudre ce bug ?',
       }),
@@ -50,7 +56,8 @@ describe('sécurité — API /answer et /feedback', () => {
   it('ignore les champs additionnels/non prévus sans planter (ex: tentative de pollution)', async () => {
     const res = await app.request('/answer', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json',
+        Authorization: 'Bearer test-token-123' },
       body: JSON.stringify({
         question: 'Question valide concernant une erreur de stock en préparation',
         admin: true,
@@ -64,7 +71,8 @@ describe('sécurité — API /answer et /feedback', () => {
   it('rejette un rating hors bornes sur /feedback (négatif)', async () => {
     const res = await app.request('/feedback', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json',
+        Authorization: 'Bearer test-token-123' },
       body: JSON.stringify({ question: 'q', answer: 'a', rating: -1 }),
     });
 
@@ -74,7 +82,8 @@ describe('sécurité — API /answer et /feedback', () => {
   it('rejette un rating non numérique sur /feedback', async () => {
     const res = await app.request('/feedback', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json',
+        Authorization: 'Bearer test-token-123' },
       body: JSON.stringify({ question: 'q', answer: 'a', rating: 'cinq' }),
     });
 
@@ -82,12 +91,13 @@ describe('sécurité — API /answer et /feedback', () => {
   });
 
   it('retourne 404 sur une route inexistante', async () => {
-    const res = await app.request('/route-inexistante', { method: 'GET' });
+    const res = await app.request('/route-inexistante', { method: 'GET', headers: { Authorization: 'Bearer test-token-123' }});
+    
     expect(res.status).toBe(404);
   });
 
   it('retourne 404 sur /answer appelée avec une méthode non supportée (GET)', async () => {
-    const res = await app.request('/answer', { method: 'GET' });
+    const res = await app.request('/answer', { method: 'GET',headers: { Authorization: 'Bearer test-token-123' } });
     expect(res.status).toBe(404);
   });
 });

@@ -21,7 +21,9 @@ vi.mock('../services/ollama', () => ({
 }));
 
 vi.mock('../config', () => ({
-  config: { topK: 3 },
+  config: {
+    topK: 3 
+  },
 }));
 
 import { retrieveSimilarIncidents } from '../rag/retriever';

@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { isLogisticsRelated } from '../api/domainFilter';
 
+
 describe('isLogisticsRelated', () => {
   it('accepte une question contenant un mot-clé métier', () => {
     expect(isLogisticsRelated('Le scanner du bac ne répond plus')).toBe(true);

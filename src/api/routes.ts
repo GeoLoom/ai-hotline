@@ -6,12 +6,14 @@ import type { Context } from 'hono';
 import { answerSchema, feedbackSchema } from './schemas.js';
 import { rateLimiter } from './rateLimiter.js';
 import { insertFeedback } from '../db.js';
+import { checkAuth } from './checkAuth.js';
 
 //todo attention on rajoute les version à partir de maintenant mais dés interconnection on rajoutera plus de route 
 
 const app = new Hono();
-
 const v1 = new Hono();
+
+v1.use('*', checkAuth);
 
 async function parseJsonBody(c: Context): Promise<{ ok: true; data: unknown } | { ok: false }> {
   try {
@@ -81,11 +83,13 @@ v1.post('/ingest', async (c) => {
 
 
 
+
+
+app.get('/health', (c) => c.json({ status: 'ok' }));
+
 app.route('/', v1);
 
 app.route('/v1', v1);
-
-app.get('/health', (c) => c.json({ status: 'ok' }));
 
 app.onError((err, c) => {
   console.error('[ai-hotline] Erreur non gérée:', err);

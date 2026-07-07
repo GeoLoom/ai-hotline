@@ -11,5 +11,8 @@ export const config = {
   chromaCollection: process.env.CHROMA_COLLECTION ?? 'incidents',
   dataRawDir: process.env.DATA_RAW_DIR ?? './data/raw',
   dataProcessedDir: process.env.DATA_PROCESSED_DIR ?? './data/processed',
-  topK: Number(process.env.TOP_K ?? 3)
+  topK: Number(process.env.TOP_K ?? 3),
+
+  //Token partagé unique, sans expiration : toutes les interconnexions utilisent la même valeur. 
+  apiToken: process.env.API_TOKEN
 };

@@ -13,6 +13,10 @@ vi.mock('../services/ollama', () => ({
   generateAnswer: vi.fn(async () => 'Réponse IA'),
 }));
 
+vi.mock('../config', () => ({
+  config: { apiToken: 'test-token-123' },
+}));
+
 describe('robustesse — API /answer', () => {
   let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
 
@@ -29,7 +33,8 @@ describe('robustesse — API /answer', () => {
 
     const res = await app.request('/answer', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json',
+        Authorization: 'Bearer test-token-123' },
       body: JSON.stringify({ question: longQuestion }),
     });
 
@@ -42,7 +47,8 @@ describe('robustesse — API /answer', () => {
 
     const res = await app.request('/answer', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json',
+        Authorization: 'Bearer test-token-123' },
       body: JSON.stringify({ question: tooLongQuestion }),
     });
 
@@ -52,7 +58,8 @@ describe('robustesse — API /answer', () => {
   it('gère correctement les caractères unicode et emojis', async () => {
     const res = await app.request('/answer', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json',
+        Authorization: 'Bearer test-token-123' },
       body: JSON.stringify({ question: 'Erreur étrange 🚨  à Lyon, é/à/ü' }),
     });
 
@@ -64,7 +71,8 @@ describe('robustesse — API /answer', () => {
 
     const res = await app.request('/answer', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json',
+        Authorization: 'Bearer test-token-123' },
       body: JSON.stringify({ question: 'Erreur bloquante sur le scanner du pool de préparation' }),
     });
 
@@ -76,7 +84,8 @@ describe('robustesse — API /answer', () => {
 
     const res = await app.request('/answer', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json',
+        Authorization: 'Bearer test-token-123' },
       body: JSON.stringify({ question: 'Erreur bloquante sur le scanner du pool de préparation' }),
     });
 
@@ -86,7 +95,8 @@ describe('robustesse — API /answer', () => {
   it('rejette une question composée uniquement d’espaces (grâce au .trim())', async () => {
     const res = await app.request('/answer', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json',
+        Authorization: 'Bearer test-token-123' },
       body: JSON.stringify({ question: '   ' }),
     });
 
