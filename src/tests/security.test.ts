@@ -8,7 +8,7 @@ vi.mock('../rag/retriever', () => ({
 }));
 
 vi.mock('../rag/promptBuilder', () => ({
-  buildSupportPrompt: vi.fn(() => 'PROMPT_TEST'),
+  buildTicketSupportPrompt: vi.fn(() => 'PROMPT_TEST'),
 }));
 
 vi.mock('../services/ollama', () => ({

@@ -70,6 +70,16 @@ describe('retriever.retrieveSimilarIncidents', () => {
     );
   });
 
+  it('transmet un filtre combiné application + source_type', async () => {
+  await retrieveSimilarIncidents('question', 'WMS', 'incident');
+
+  expect(queryMock).toHaveBeenCalledWith(
+    expect.objectContaining({
+      where: { $and: [{ application: 'WMS' }, { source_type: 'incident' }] },
+    })
+  );
+});
+
   it('ne transmet aucun filtre "where" quand application est omis', async () => {
     await retrieveSimilarIncidents('question');
 

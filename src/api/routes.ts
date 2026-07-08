@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { retrieveSimilarIncidents } from '../rag/retriever.js';
-import { buildSupportPrompt } from '../rag/promptBuilder.js';
+import { buildTicketSupportPrompt, buildDocsSupportPrompt } from '../rag/promptBuilder.js';
 import { generateAnswer } from '../services/ollama.js';
 import type { Context } from 'hono';   
 import { answerSchema, feedbackSchema } from './schemas.js';
@@ -39,8 +39,8 @@ v1.post('/answer', rateLimiter({ windowMs: 60_000, max: 20 }), async (c) => {
   }
 
   const { question, application } = parsed.data;
-  const retrieved = await retrieveSimilarIncidents(question, application);
-  const prompt = buildSupportPrompt(question, retrieved);
+  const retrieved = await retrieveSimilarIncidents(question, application, 'incident');
+  const prompt = buildTicketSupportPrompt(question, retrieved);
   const answer = await generateAnswer(prompt);
 
   return c.json({
@@ -50,6 +50,28 @@ v1.post('/answer', rateLimiter({ windowMs: 60_000, max: 20 }), async (c) => {
       score: doc.score,
       application: doc.metadata.application ?? null,
       site: doc.metadata.site ?? null
+    }))
+  });
+});
+
+v1.post('/answer/docs', rateLimiter({ windowMs: 60_000, max: 20 }), async (c) => {
+  const body = await parseJsonBody(c);
+  if (!body.ok) {
+    return c.json({ error: 'Invalid JSON body' }, 400);
+  }
+  const parsed = answerSchema.safeParse(body.data);
+  if (!parsed.success) {
+    return c.json({ error: parsed.error.flatten() }, 400);
+  }
+  const { question, application } = parsed.data;
+  const retrieved = await retrieveSimilarIncidents(question, application, 'doc');
+  const prompt = buildDocsSupportPrompt(question, retrieved);
+  const answer = await generateAnswer(prompt);
+  return c.json({
+    answer,
+    sources: retrieved.map((doc) => ({
+      reference: doc.metadata.ticket_id ?? doc.id,
+      score: doc.score
     }))
   });
 });

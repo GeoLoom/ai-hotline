@@ -1,5 +1,4 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { buildSupportPrompt } from '../rag/promptBuilder';
 import { normalizeIncident } from '../rag/cleaner';
 import app from '../api/routes';
 import { retrieveSimilarIncidents } from '../rag/retriever';
@@ -16,6 +15,7 @@ vi.mock('../services/ollama', () => ({
 vi.mock('../config', () => ({
   config: { apiToken: 'test-token-123' },
 }));
+
 
 describe('robustesse — API /answer', () => {
   let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
@@ -77,6 +77,7 @@ describe('robustesse — API /answer', () => {
     });
 
     expect(consoleErrorSpy).toHaveBeenCalled();
+    expect(res.status).toBe(500);
   });
 
   it('retourne 500 si Ollama échoue à générer une réponse', async () => {
@@ -88,7 +89,7 @@ describe('robustesse — API /answer', () => {
         Authorization: 'Bearer test-token-123' },
       body: JSON.stringify({ question: 'Erreur bloquante sur le scanner du pool de préparation' }),
     });
-
+    expect(res.status).toBe(500);
     expect(consoleErrorSpy).toHaveBeenCalled();
   });
 
@@ -105,12 +106,6 @@ describe('robustesse — API /answer', () => {
 });
 
 describe('robustesse — fonctions pures', () => {
-  it('buildSupportPrompt ne plante pas sans contexte', () => {
-    const prompt = buildSupportPrompt('Question sans résultat', []);
-
-    expect(prompt).toContain('Question sans résultat');
-    expect(prompt).toContain('If the incidents are insufficient');
-  });
 
   it('normalizeIncident ne plante pas avec un incident minimal', () => {
     const incident = normalizeIncident({
