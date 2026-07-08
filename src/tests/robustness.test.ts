@@ -118,7 +118,7 @@ describe('robustesse — fonctions pures', () => {
     });
 
     expect(incident.ticketId).toBe('1');
-    expect(incident.cleanedText).toContain('Incident: 1');
+    expect(incident.cleanedText).toContain('Commentaire:');
   });
 
   it('normalizeIncident ignore les échanges vides', () => {

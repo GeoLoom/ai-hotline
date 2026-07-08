@@ -23,6 +23,8 @@ vi.mock('../config', () => ({
   config: { apiToken: 'test-token-123' },
 }));
 
+
+
 describe('sécurité — API /answer et /feedback', () => {
   it('renvoie une 400 propre sur un corps JSON malformé (au lieu d’une 500 générique)', async () => {
     const res = await app.request('/answer', {
@@ -120,5 +122,11 @@ describe('sécurité et nettoyage', () => {
     const result = stripHtml('Erreur     préparation');
 
     expect(result).toBe('Erreur préparation');
+  });
+
+  it('ne confond pas les opérateurs de comparaison SQL avec des balises HTML', () => {
+    const sql = "and id_e_col >= 90 and DM < SYSDATE - (30/1440) union all select x from colis";
+    const result = stripHtml(sql);
+    expect(result).toBe(sql);
   });
 });

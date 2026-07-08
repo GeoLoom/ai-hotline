@@ -15,12 +15,6 @@ export function normalizeIncident(doc: RawIncidentDocument): NormalizedIncident 
   const echangeTech = cleanArray(doc.echange_tech);
 
   const rawText = [
-    `Incident: ${doc.id}`,
-    `Groupe: ${doc.groupe ?? ''}`,
-    `Site: ${doc.site ?? ''}`,
-    `Application: ${doc.application ?? ''}`,
-    `Date: ${doc.date_creation ?? ''}`,
-    '',
     'Commentaire:',
     commentaire,
     '',
@@ -49,3 +43,4 @@ export function normalizeIncident(doc: RawIncidentDocument): NormalizedIncident 
     cleanedText
   };
 }
+
