@@ -21,7 +21,9 @@ vi.mock('../services/ollama', () => ({
 }));
 
 vi.mock('../config', () => ({
-  config: { topK: 3 },
+  config: {
+    topK: 3 
+  },
 }));
 
 import { retrieveSimilarIncidents } from '../rag/retriever';
@@ -67,6 +69,16 @@ describe('retriever.retrieveSimilarIncidents', () => {
       expect.objectContaining({ where: { application: 'WMS' } })
     );
   });
+
+  it('transmet un filtre combiné application + source_type', async () => {
+  await retrieveSimilarIncidents('question', 'WMS', 'incident');
+
+  expect(queryMock).toHaveBeenCalledWith(
+    expect.objectContaining({
+      where: { $and: [{ application: 'WMS' }, { source_type: 'incident' }] },
+    })
+  );
+});
 
   it('ne transmet aucun filtre "where" quand application est omis', async () => {
     await retrieveSimilarIncidents('question');

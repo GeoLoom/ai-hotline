@@ -1,5 +1,4 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { buildSupportPrompt } from '../rag/promptBuilder';
 import { normalizeIncident } from '../rag/cleaner';
 import app from '../api/routes';
 import { retrieveSimilarIncidents } from '../rag/retriever';
@@ -13,6 +12,11 @@ vi.mock('../services/ollama', () => ({
   generateAnswer: vi.fn(async () => 'Réponse IA'),
 }));
 
+vi.mock('../config', () => ({
+  config: { apiToken: 'test-token-123' },
+}));
+
+
 describe('robustesse — API /answer', () => {
   let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
 
@@ -25,11 +29,12 @@ describe('robustesse — API /answer', () => {
   });
 
   it('accepte une question très longue sans planter', async () => {
-    const longQuestion = 'Erreur de préparation répétée '.repeat(200);
+    const longQuestion = 'Erreur de préparation répétée sur le pool '.repeat(40);
 
     const res = await app.request('/answer', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json',
+        Authorization: 'Bearer test-token-123' },
       body: JSON.stringify({ question: longQuestion }),
     });
 
@@ -37,12 +42,25 @@ describe('robustesse — API /answer', () => {
   });
 
 
+  it('rejette une question dépassant la limite de 2000 caractères', async () => {
+    const tooLongQuestion = 'Erreur de préparation répétée sur le quai '.repeat(60);
+
+    const res = await app.request('/answer', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json',
+        Authorization: 'Bearer test-token-123' },
+      body: JSON.stringify({ question: tooLongQuestion }),
+    });
+
+    expect(res.status).toBe(400);
+  });
 
   it('gère correctement les caractères unicode et emojis', async () => {
     const res = await app.request('/answer', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question: 'Erreur étrange 🚨 à Lyon, é/à/ü' }),
+      headers: { 'Content-Type': 'application/json',
+        Authorization: 'Bearer test-token-123' },
+      body: JSON.stringify({ question: 'Erreur étrange 🚨  à Lyon, é/à/ü' }),
     });
 
     expect(res.status).toBe(200);
@@ -53,11 +71,13 @@ describe('robustesse — API /answer', () => {
 
     const res = await app.request('/answer', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question: 'Question quelconque valide' }),
+      headers: { 'Content-Type': 'application/json',
+        Authorization: 'Bearer test-token-123' },
+      body: JSON.stringify({ question: 'Erreur bloquante sur le scanner du pool de préparation' }),
     });
 
     expect(consoleErrorSpy).toHaveBeenCalled();
+    expect(res.status).toBe(500);
   });
 
   it('retourne 500 si Ollama échoue à générer une réponse', async () => {
@@ -65,31 +85,27 @@ describe('robustesse — API /answer', () => {
 
     const res = await app.request('/answer', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question: 'Question quelconque valide' }),
+      headers: { 'Content-Type': 'application/json',
+        Authorization: 'Bearer test-token-123' },
+      body: JSON.stringify({ question: 'Erreur bloquante sur le scanner du pool de préparation' }),
     });
-
+    expect(res.status).toBe(500);
     expect(consoleErrorSpy).toHaveBeenCalled();
   });
 
-  it('révèle un cas non couvert par le schéma : une question composée uniquement d’espaces est acceptée', async () => {
+  it('rejette une question composée uniquement d’espaces (grâce au .trim())', async () => {
     const res = await app.request('/answer', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json',
+        Authorization: 'Bearer test-token-123' },
       body: JSON.stringify({ question: '   ' }),
     });
 
-    expect(res.status).toBe(200);
+    expect(res.status).toBe(400);
   });
 });
 
 describe('robustesse — fonctions pures', () => {
-  it('buildSupportPrompt ne plante pas sans contexte', () => {
-    const prompt = buildSupportPrompt('Question sans résultat', []);
-
-    expect(prompt).toContain('Question sans résultat');
-    expect(prompt).toContain('If the incidents are insufficient');
-  });
 
   it('normalizeIncident ne plante pas avec un incident minimal', () => {
     const incident = normalizeIncident({
@@ -97,7 +113,7 @@ describe('robustesse — fonctions pures', () => {
     });
 
     expect(incident.ticketId).toBe('1');
-    expect(incident.cleanedText).toContain('Incident: 1');
+    expect(incident.cleanedText).toContain('Commentaire:');
   });
 
   it('normalizeIncident ignore les échanges vides', () => {

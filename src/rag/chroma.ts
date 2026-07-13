@@ -6,6 +6,8 @@ export const chroma = new ChromaClient({
 
 export async function getCollection() {
   return chroma.getOrCreateCollection({
-    name: "incidents"
+    name: "incidents",
+    metadata: { "hnsw:space": "cosine" },
+    embeddingFunction: undefined 
   })
 }

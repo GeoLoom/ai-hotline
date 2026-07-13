@@ -6,10 +6,9 @@ vi.mock('../config', () => ({
   config: {
     ollamaBaseUrl: 'http://fake-ollama:11434',
     ollamaChatModel: 'phi3',
-    ollamaEmbedModel: 'nomic-embed-text',
+    ollamaEmbedModel: 'nomic-embed-text'
   },
 }));
-
 
 describe('ollama service', () => {
   beforeEach(() => {

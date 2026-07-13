@@ -6,7 +6,7 @@ export function stripHtml(input: string): string {
     .replace(/<p[\s\S]*?>/gi, '\n')
     .replace(/<\/p>/gi, '\n')
     .replace(/<table[\s\S]*?<\/table>/gi, ' [TABLE_REMOVED] ')
-    .replace(/<[^>]+>/g, ' ')
+    .replace(/<\/?[a-zA-Z][a-zA-Z0-9]*(?:\s[^<>]*)?>/g, ' ')
     .replace(/&nbsp;/g, ' ')
     .replace(/&eacute;/g, 'é')
     .replace(/&agrave;/g, 'à')

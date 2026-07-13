@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { normalizeIncident } from '../rag/cleaner';
 import { chunkIncident } from '../rag/chunker';
 
+
 describe('ingestion incidents', () => {
   it('normalise un incident JSON valide', () => {
     const incident = normalizeIncident({
@@ -47,7 +48,7 @@ describe('ingestion incidents', () => {
     expect(incident.ticketId).toBe('999');
     expect(incident.echangeClient).toEqual([]);
     expect(incident.echangeTech).toEqual([]);
-    expect(incident.cleanedText).toContain('Incident: 999');
+    expect(incident.cleanedText).toContain('Commentaire:');
   });
 
   it('remplace les métadonnées manquantes par une chaîne vide dans le chunk', () => {

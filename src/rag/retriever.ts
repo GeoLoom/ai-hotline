@@ -11,15 +11,25 @@ export interface RetrievedDocument {
 
 export async function retrieveSimilarIncidents(
   question: string,
-  application?: string
+  application?: string,
+  sourceType?: 'incident' | 'doc'
 ): Promise<RetrievedDocument[]> {
   const collection = await getCollection();
   const embedding = await generateEmbedding(question);
 
+  const filters: Record<string, string>[] = [];
+  if (application) filters.push({ application });
+  if (sourceType) filters.push({ source_type: sourceType });
+
+  const where =
+    filters.length === 0 ? undefined :
+    filters.length === 1 ? filters[0] :
+    { $and: filters };
+
   const result = await collection.query({
     queryEmbeddings: [embedding],
     nResults: config.topK,
-    where: application ? { application } : undefined,
+    where,
   });
 
   const ids = result.ids?.[0] ?? [];

@@ -9,25 +9,32 @@
     "dev": "tsx watch src/index.ts",
     "start": "node dist/index.js",
     "ingest": "tsx src/ingestion/ingestIncidents.ts",
+    "ingest:docs": "tsx src/ingestion/ingestDocs.ts",
     "test": "vitest run",
     "test:watch": "vitest"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13",
+    "@types/mailparser": "^3.4.6",
     "@types/node": "^25.4.0",
-    "esbuild": "^0.21.4",
+    "esbuild": "^0.28.1",
     "npm-run-all2": "^6.2.0",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "vitest": "^4.1.9"
   },
   "dependencies": {
+    "@asteasolutions/zod-to-openapi": "^8.5.0",
+    "@chroma-core/default-embed": "^0.1.9",
     "@hono/node-server": "^1.19.11",
     "axios": "^1.13.5",
     "better-sqlite3": "^12.6.2",
     "chromadb": "^3.3.2",
     "dotenv": "^17.3.1",
     "hono": "^4.12.7",
-    "zod": "^4.3.6"
+    "mailparser": "^3.9.14",
+    "mammoth": "^1.12.0",
+    "word-extractor": "^1.0.4",
+    "zod": "^4.4.3"
   }
 }

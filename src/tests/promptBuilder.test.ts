@@ -1,15 +1,15 @@
 import { describe, it, expect } from 'vitest';
-import { buildSupportPrompt } from '../rag/promptBuilder';
+import { buildTicketSupportPrompt, buildDocsSupportPrompt } from '../rag/promptBuilder';
 
 describe('buildSupportPrompt', () => {
   it('contient la question utilisateur', () => {
-    const prompt = buildSupportPrompt('Problème de préparation', []);
+    const prompt = buildTicketSupportPrompt('Problème de préparation', []);
 
     expect(prompt).toContain('Problème de préparation');
   });
 
   it('contient les incidents récupérés', () => {
-    const prompt = buildSupportPrompt('Erreur stock', [
+    const prompt = buildTicketSupportPrompt('Erreur stock', [
       {
         id: 'incident-1',
         text: 'Erreur de stock corrigée par recalcul inventaire',
@@ -26,23 +26,21 @@ describe('buildSupportPrompt', () => {
   });
 
   it('impose une réponse structurée', () => {
-    const prompt = buildSupportPrompt('Question test', []);
-
-    expect(prompt).toContain('1. Probable root cause');
-    expect(prompt).toContain('2. Diagnostic steps');
-    expect(prompt).toContain('3. Possible fix');
-    expect(prompt).toContain('4. Risks / precautions');
-    expect(prompt).toContain('5. References to incidents');
+    const prompt = buildTicketSupportPrompt('Question test', []);
+    expect(prompt).toContain('FIRST, check if one of the incidents above');
+    expect(prompt).toContain('IF this looks like a recurring issue');
+    expect(prompt).toContain('ONLY IF no retrieved incident contains a usable concrete resolution');
+   
   });
 
   it('demande de ne pas inventer de correction', () => {
-    const prompt = buildSupportPrompt('Question test', []);
+    const prompt = buildTicketSupportPrompt('Question test', []);
 
-    expect(prompt).toContain('Do not invent a fix');
+    expect(prompt).toContain('Do not invent a command or a fix');
   });
 
   it('retombe sur l’id du document si ticket_id est absent des métadonnées', () => {
-    const prompt = buildSupportPrompt('Question test', [
+    const prompt = buildTicketSupportPrompt('Question test', [
       {
         id: 'doc-sans-ticket-id',
         text: 'Contenu de secours',
@@ -51,19 +49,34 @@ describe('buildSupportPrompt', () => {
       },
     ]);
 
-    expect(prompt).toContain('Ticket ID: doc-sans-ticket-id');
+    expect(prompt).toContain('Reference: doc-sans-ticket-id');
   });
 
 
   it('numérote correctement plusieurs incidents récupérés', () => {
-    const prompt = buildSupportPrompt('Question test', [
+    const prompt = buildTicketSupportPrompt('Question test', [
       { id: 'a', text: 'Premier incident', score: 0.9, metadata: { ticket_id: 'INC-1' } },
       { id: 'b', text: 'Deuxième incident', score: 0.8, metadata: { ticket_id: 'INC-2' } },
     ]);
 
-    expect(prompt).toContain('### Incident 1');
+    expect(prompt).toContain('### Source 1');
     expect(prompt).toContain('INC-1');
-    expect(prompt).toContain('### Incident 2');
+    expect(prompt).toContain('### Source 2');
     expect(prompt).toContain('INC-2');
+  });
+});
+
+describe('buildDocsSupportPrompt', () => {
+  it('inclut la question et les extraits de documentation', () => {
+    const prompt = buildDocsSupportPrompt('Comment faire X ?', [
+      { id: 'doc-1', score: 0.9, text: 'Procédure de X', metadata: {} } as any,
+    ]);
+    expect(prompt).toContain('Comment faire X ?');
+    expect(prompt).toContain('Procédure de X');
+  });
+
+  it('demande de ne pas résumer les étapes précises', () => {
+    const prompt = buildDocsSupportPrompt('question', []);
+    expect(prompt).toContain('do not summarize away specific instructions');
   });
 });

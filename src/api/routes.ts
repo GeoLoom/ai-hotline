@@ -1,23 +1,21 @@
 import { Hono } from 'hono';
-import { z } from 'zod';
 import { retrieveSimilarIncidents } from '../rag/retriever.js';
-import { buildSupportPrompt } from '../rag/promptBuilder.js';
+import { buildTicketSupportPrompt, buildDocsSupportPrompt } from '../rag/promptBuilder.js';
 import { generateAnswer } from '../services/ollama.js';
 import type { Context } from 'hono';   
+import { answerSchema, feedbackSchema } from './schemas.js';
+import { rateLimiter } from './rateLimiter.js';
+import { insertFeedback } from '../db.js';
+import { checkAuth } from './checkAuth.js';
+import { openApiDocument } from './openapi.js';
+
+//todo attention on rajoute les version à partir de maintenant mais dés interconnection on rajoutera plus de route 
+
 
 const app = new Hono();
+const v1 = new Hono();
 
-const answerSchema = z.object({
-  question: z.string().min(3),
-  application: z.string().optional()
-});
-
-const feedbackSchema = z.object({
-  question: z.string(),
-  answer: z.string(),
-  rating: z.number().min(1).max(5),
-  comment: z.string().optional()
-});
+v1.use('*', checkAuth);
 
 async function parseJsonBody(c: Context): Promise<{ ok: true; data: unknown } | { ok: false }> {
   try {
@@ -28,7 +26,7 @@ async function parseJsonBody(c: Context): Promise<{ ok: true; data: unknown } | 
 }
 
 
-app.post('/answer', async (c) => {
+v1.post('/answer', rateLimiter({ windowMs: 60_000, max: 20 }), async (c) => {
   const body = await parseJsonBody(c);
   if (!body.ok) {
     return c.json({ error: 'Invalid JSON body' }, 400);
@@ -41,8 +39,8 @@ app.post('/answer', async (c) => {
   }
 
   const { question, application } = parsed.data;
-  const retrieved = await retrieveSimilarIncidents(question, application);
-  const prompt = buildSupportPrompt(question, retrieved);
+  const retrieved = await retrieveSimilarIncidents(question, application, 'incident');
+  const prompt = buildTicketSupportPrompt(question, retrieved);
   const answer = await generateAnswer(prompt);
 
   return c.json({
@@ -56,7 +54,29 @@ app.post('/answer', async (c) => {
   });
 });
 
-app.post('/feedback', async (c) => {
+v1.post('/answer/docs', rateLimiter({ windowMs: 60_000, max: 20 }), async (c) => {
+  const body = await parseJsonBody(c);
+  if (!body.ok) {
+    return c.json({ error: 'Invalid JSON body' }, 400);
+  }
+  const parsed = answerSchema.safeParse(body.data);
+  if (!parsed.success) {
+    return c.json({ error: parsed.error.flatten() }, 400);
+  }
+  const { question, application } = parsed.data;
+  const retrieved = await retrieveSimilarIncidents(question, application, 'doc');
+  const prompt = buildDocsSupportPrompt(question, retrieved);
+  const answer = await generateAnswer(prompt);
+  return c.json({
+    answer,
+    sources: retrieved.map((doc) => ({
+      reference: doc.metadata.ticket_id ?? doc.id,
+      score: doc.score
+    }))
+  });
+});
+
+v1.post('/feedback', async (c) => {
   
   const body = await parseJsonBody(c);
   if (!body.ok) {
@@ -68,6 +88,8 @@ app.post('/feedback', async (c) => {
   if (!parsed.success) {
     return c.json({ error: parsed.error.flatten() }, 400);
   }
+  
+  insertFeedback(parsed.data);
 
   return c.json({
     status: 'ok',
@@ -76,12 +98,23 @@ app.post('/feedback', async (c) => {
   });
 });
 
-app.post('/ingest', async (c) => {
+v1.post('/ingest', async (c) => {
   return c.json({
     status: 'todo',
     message: 'Prefer running ingestion through npm run ingest for batch indexing'
   });
 });
+
+
+
+
+
+app.get('/health', (c) => c.json({ status: 'ok' }));
+app.get('/openapi.json', (c) => c.json(openApiDocument));
+
+app.route('/', v1);
+app.route('/v1', v1);
+
 
 
 app.onError((err, c) => {
