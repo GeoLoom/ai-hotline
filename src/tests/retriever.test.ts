@@ -127,4 +127,25 @@ describe('retriever.retrieveSimilarIncidents', () => {
 
     await expect(retrieveSimilarIncidents('question')).rejects.toThrow('ChromaDB indisponible');
   });
+
+  it('transmet uniquement le filtre source_type quand application est omis', async () => {
+  await retrieveSimilarIncidents('question', undefined, 'doc');
+
+  expect(queryMock).toHaveBeenCalledWith(
+    expect.objectContaining({ where: { source_type: 'doc' } })
+  );
+});
+
+it('retourne un score de 0 si la distance est null', async () => {
+  queryMock.mockResolvedValueOnce({
+    ids: [['incident-999']],
+    documents: [['Texte']],
+    metadatas: [[{ ticket_id: 'INC-999' ,application: 'WMS'}]],
+    distances: [[null]],
+} as any);
+
+  const [result] = await retrieveSimilarIncidents('question');
+
+  expect(result.score).toBe(0);
+});
 });

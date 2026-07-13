@@ -62,4 +62,30 @@ describe('ingestion incidents', () => {
     expect(chunk.metadata.date_creation).toBe('');
     expect(chunk.metadata.source_type).toBe('incident');
   });
+  it('découpe un texte long en plusieurs chunks avec chevauchement', () => {
+  const longText = 'Erreur de préparation répétée sur le quai '.repeat(60); // > 1500 caractères
+  const incident = normalizeIncident({
+    id: 555,
+    application: 'WMS',
+    commentaire: longText,
+  });
+
+  const chunks = chunkIncident(incident);
+
+  expect(chunks.length).toBeGreaterThan(1);
+  expect(chunks[0].id).toBe('incident-555-0');
+  expect(chunks[1].id).toBe('incident-555-1');
+  const endOfFirst = chunks[0].text.slice(-100);
+  expect(chunks[1].text).toContain(endOfFirst.slice(0, 50));
+});
+
+it('chaque chunk d’un même incident porte le même ticketId', () => {
+  const longText = 'Contenu répété '.repeat(200);
+  const incident = normalizeIncident({ id: 777, commentaire: longText });
+
+  const chunks = chunkIncident(incident);
+
+  expect(chunks.length).toBeGreaterThan(1);
+  chunks.forEach((chunk) => expect(chunk.ticketId).toBe('777'));
+});
 });

@@ -37,6 +37,7 @@ yarn-error.log*
 .cache/
 .parcel-cache/
 .eslintcache
+coverage/
 
 # TypeScript
 *.tsbuildinfo
