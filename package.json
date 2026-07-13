@@ -9,11 +9,13 @@
     "dev": "tsx watch src/index.ts",
     "start": "node dist/index.js",
     "ingest": "tsx src/ingestion/ingestIncidents.ts",
+    "ingest:docs": "tsx src/ingestion/ingestDocs.ts",
     "test": "vitest run",
     "test:watch": "vitest"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13",
+    "@types/mailparser": "^3.4.6",
     "@types/node": "^25.4.0",
     "esbuild": "^0.28.1",
     "npm-run-all2": "^6.2.0",
@@ -30,6 +32,9 @@
     "chromadb": "^3.3.2",
     "dotenv": "^17.3.1",
     "hono": "^4.12.7",
+    "mailparser": "^3.9.14",
+    "mammoth": "^1.12.0",
+    "word-extractor": "^1.0.4",
     "zod": "^4.4.3"
   }
 }

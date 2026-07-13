@@ -11,13 +11,14 @@ async function main() {
 
   const collection = await getCollection()
 
-  const files = fs.readdirSync(config.dataRawDir);
 
+  const files = fs.readdirSync(config.dataRawIncidentsDir);
+ 
   let indexedChunks = 0;
   let failedIncidents = 0;
 
   for (const file of files) {
-    const filePath = path.join(config.dataRawDir, file);
+    const filePath = path.join(config.dataRawIncidentsDir, file);
     const content = fs.readFileSync(filePath, 'utf-8');
     const json = JSON.parse(content);
 

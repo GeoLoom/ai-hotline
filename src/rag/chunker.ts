@@ -4,6 +4,27 @@ import type { ChunkedIncidentDocument, NormalizedIncident } from '../types/incid
 const MAX_CHUNK_CHARS = 1500;
 const CHUNK_OVERLAP_CHARS = 200;
 
+
+export function splitIntoChunks(
+  text: string,
+  maxChars = MAX_CHUNK_CHARS,
+  overlapChars = CHUNK_OVERLAP_CHARS
+): string[] {
+  if (text.length <= maxChars) return [text];
+
+  const chunks: string[] = [];
+  let start = 0;
+
+  while (start < text.length) {
+    const end = Math.min(start + maxChars, text.length);
+    chunks.push(text.slice(start, end));
+    if (end === text.length) break;
+    start = end - overlapChars;
+  }
+
+  return chunks;
+}
+
 export function chunkIncident(incident: NormalizedIncident): ChunkedIncidentDocument[] {
   const baseMetadata = {
     ticket_id: incident.ticketId,
@@ -13,29 +34,24 @@ export function chunkIncident(incident: NormalizedIncident): ChunkedIncidentDocu
     date_creation: incident.dateCreation ?? '',
     source_type: 'incident' as const,
   };
-  
-  const text = incident.cleanedText;
 
-  if (text.length <= MAX_CHUNK_CHARS) {
-    return [{ id: `incident-${incident.ticketId}`, ticketId: incident.ticketId, text, metadata: baseMetadata }];
+  const pieces = splitIntoChunks(incident.cleanedText);
+
+  if (pieces.length === 1) {
+    return [
+      {
+        id: `incident-${incident.ticketId}`,
+        ticketId: incident.ticketId,
+        text: pieces[0],
+        metadata: baseMetadata,
+      },
+    ];
   }
 
-  const chunks: ChunkedIncidentDocument[] = [];
-  let start = 0;
-  let index = 0;
-
-  while (start < text.length) {
-    const end = Math.min(start + MAX_CHUNK_CHARS, text.length);
-    chunks.push({
-      id: `incident-${incident.ticketId}-${index}`,
-      ticketId: incident.ticketId,
-      text: text.slice(start, end),
-      metadata: baseMetadata,
-    });
-    index++;
-    if (end === text.length) break;
-    start = end - CHUNK_OVERLAP_CHARS;
-  }
-
-  return chunks;
+  return pieces.map((text, index) => ({
+    id: `incident-${incident.ticketId}-${index}`,
+    ticketId: incident.ticketId,
+    text,
+    metadata: baseMetadata,
+  }));
 }
