@@ -114,4 +114,17 @@ describe('ollama service', () => {
 
     await expect(generateEmbedding('texte test')).rejects.toThrow('Ollama embeddings failed');
   });
+
+  it('generateAnswer retourne une chaîne vide si pas de champ "response"', async () => {
+  const fetchMock = vi.fn(async (_url: string, _init?: RequestInit) => ({
+    ok: true,
+    json: async () => ({}),
+  }));
+
+  vi.stubGlobal('fetch', fetchMock);
+
+  const result = await generateAnswer('prompt test');
+
+  expect(result).toBe('');
+});
 });
