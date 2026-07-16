@@ -1,3 +1,5 @@
+import fs from 'node:fs';
+import path from 'node:path';
 import { Hono } from 'hono';
 import { retrieveSimilarIncidents } from '../rag/retriever.js';
 import { buildTicketSupportPrompt, buildDocsSupportPrompt } from '../rag/promptBuilder.js';
@@ -8,9 +10,7 @@ import { rateLimiter } from './rateLimiter.js';
 import { insertFeedback } from '../db.js';
 import { checkAuth } from './checkAuth.js';
 import { openApiDocument } from './openapi.js';
-
-//todo attention on rajoute les version à partir de maintenant mais dés interconnection on rajoutera plus de route 
-
+import { serveStatic } from '@hono/node-server/serve-static';
 
 const app = new Hono();
 const v1 = new Hono();
@@ -111,6 +111,13 @@ v1.post('/ingest', async (c) => {
 
 app.get('/health', (c) => c.json({ status: 'ok' }));
 app.get('/openapi.json', (c) => c.json(openApiDocument));
+
+app.get('/demo', (c) => {
+  const html = fs.readFileSync(path.join(process.cwd(), 'public/demo/index.html'), 'utf-8');
+  return c.html(html);
+});
+
+app.use('/demo/assets/*', serveStatic({ root: './public' }));
 
 app.route('/', v1);
 app.route('/v1', v1);

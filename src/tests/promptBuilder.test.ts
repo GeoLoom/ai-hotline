@@ -27,16 +27,16 @@ describe('buildSupportPrompt', () => {
 
   it('impose une réponse structurée', () => {
     const prompt = buildTicketSupportPrompt('Question test', []);
-    expect(prompt).toContain('FIRST, check if one of the incidents above');
-    expect(prompt).toContain('IF this looks like a recurring issue');
-    expect(prompt).toContain('ONLY IF no retrieved incident contains a usable concrete resolution');
+    expect(prompt).toContain('Commence par vérifier si l\'un des incidents ci-dessus décrit exactement le même problème');
+    expect(prompt).toContain('Si plusieurs incidents montrent qu\'il s\'agit d\'un problème récurrent');
+    expect(prompt).toContain('Si aucun incident ne contient de solution exploitable');
    
   });
 
   it('demande de ne pas inventer de correction', () => {
     const prompt = buildTicketSupportPrompt('Question test', []);
 
-    expect(prompt).toContain('Do not invent a command or a fix');
+    expect(prompt).toContain('Ne jamais inventer une commande, une procédure ou une correction');
   });
 
   it('retombe sur l’id du document si ticket_id est absent des métadonnées', () => {
@@ -77,6 +77,6 @@ describe('buildDocsSupportPrompt', () => {
 
   it('demande de ne pas résumer les étapes précises', () => {
     const prompt = buildDocsSupportPrompt('question', []);
-    expect(prompt).toContain('do not summarize away specific instructions');
+    expect(prompt).toContain('ne supprime aucune étape importante');
   });
 });
