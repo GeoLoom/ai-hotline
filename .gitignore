@@ -1,5 +1,6 @@
 # Dépendances Node.js
 node_modules/
+demo-frontend/node_modules/
 
 # Variables d'env
 .env
@@ -14,6 +15,7 @@ node_modules/
 dist/
 build/
 out/
+demo-frontend/dist/
 
 # Base de données locale
 *.db
@@ -37,6 +39,11 @@ yarn-error.log*
 .cache/
 .parcel-cache/
 .eslintcache
+.vite/
+coverage/
+
+# Démo générée
+public/demo/
 
 # TypeScript
 *.tsbuildinfo

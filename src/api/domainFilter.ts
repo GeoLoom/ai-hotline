@@ -11,11 +11,15 @@ const LOGISTICS_KEYWORDS = [
   //---logistique
   'colis', 'palette', 'bac', 'stock', 'preparation', 'expedition',
   'reception', 'commande', 'prelevement', 'picking', 'inventaire',
-  'quai', 'chariot', 'entrepot','pool',
+  'quai', 'chariot', 'entrepot', 'pool', 'article', 'transporteur',
+  'AFFRÉTEUR', 'ALVÉOLE', 'ALLOTMENT', 'REQUIREMENTS', 'SHIPPING',
+  'SUPPLY CHAIN', 'EAN', 'CONTAINER', 'CROSS DOCKING', 'EDI',
   //---Technique
   'scanner', 'radio', 'ecran', 'erreur', 'bug', 'latence', 'lock',
   'pool', 'wms', 'imprimante', 'etiquette', 'reseau', 'serveur',
-  'connexion', 'application', 'terminal',
+  'connexion', 'application', 'terminal', 'parametre',
+  //---Mot clé
+  'maGistor', 'Logys', 'WMS', 'WTS', 'LM', 'Odatio', 'Exotec', 'TDI', 'LMD',
 ];
 
 export function isLogisticsRelated(question: string): boolean {

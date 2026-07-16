@@ -58,4 +58,18 @@ describe('authentification', () => {
     const res = await app.request('/health');
     expect(res.status).toBe(200);
   });
+
+  it('retourne 500 si API_TOKEN n’est pas configuré côté serveur', async () => {
+  vi.doMock('../config', () => ({ config: { apiToken: undefined } }));
+  vi.resetModules();
+  const { default: appWithoutToken } = await import('../api/routes');
+
+  const res = await appWithoutToken.request('/answer', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer whatever' },
+    body: JSON.stringify({ question: 'Erreur scanner sur le quai' }),
+  });
+
+  expect(res.status).toBe(500);
+});
 });

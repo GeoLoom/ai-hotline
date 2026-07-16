@@ -19,6 +19,9 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
+          
+      - name: Aligner npm sur la version locale du projet
+        run: npm install -g npm@11.6.1
 
       - name: Installation des dépendances
         run: npm ci
@@ -29,5 +32,8 @@ jobs:
       - name: Linting
         run: npx eslint src/ --ext .ts || true
 
-      - name: Tests unitaires
-        run: npm test
+      - name: Couverture de tests
+        run: npm run test:coverage
+
+      - name: Audit de sécurité des dépendances
+        run: npm audit --audit-level=high

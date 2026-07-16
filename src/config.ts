@@ -15,6 +15,7 @@ export const config = {
   dataRawIncidentsDir: process.env.DATA_RAW_INCIDENTS_DIR ?? path.join(process.env.DATA_RAW_DIR ?? './data/raw', 'Incidents'),
   dataRawDocsDir: process.env.DATA_RAW_DOCS_DIR ?? path.join(process.env.DATA_RAW_DIR ?? './data/raw', 'Documents'),
   dataRawDir: process.env.DATA_RAW_DIR ?? './data/raw',
+  dbPath: process.env.DB_PATH ?? 'vector.db',
   
   //Token partagé unique, sans expiration : toutes les interconnexions utilisent la même valeur. 
   apiToken: process.env.API_TOKEN
