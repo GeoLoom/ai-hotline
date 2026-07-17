@@ -74,7 +74,7 @@ body {
 
 header.top {
   flex: none;
-  background: var(--surface);
+  background: var(--bg);
   padding: 0.9rem 1.5rem;
   display: flex;
   align-items: center;
@@ -273,6 +273,46 @@ header.top .mark {
 }
 .copy-button:hover {
   text-decoration: underline;
+}
+
+.feedback-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.6rem;
+}
+
+.feedback-label {
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+}
+
+.feedback-button {
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 0.2rem 0.5rem;
+  font-size: 0.9rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.feedback-button:hover:not(:disabled) {
+  border-color: var(--blue);
+}
+.feedback-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.feedback-thanks {
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  font-style: italic;
+}
+
+.feedback-error {
+  font-size: 0.78rem;
+  color: var(--red-deep);
 }
 
 .bubble.loading {
