@@ -4,9 +4,6 @@ import { extendZodWithOpenApi } from '@asteasolutions/zod-to-openapi';
 
 extendZodWithOpenApi(z);
 
-//Todo avec zod, on doit pouvoir faire des trucs cool pour limiter les questions foireux.
-//Genre faire un keywords des mots qu'on accepte pour limiter le choix de réponse et éviter une satu, à revenir dessus lors des prochains test en prod
-
 export const answerSchema = z.object({
   question: z
     .string()
