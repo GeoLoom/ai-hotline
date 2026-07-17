@@ -20,6 +20,8 @@ const LOGISTICS_KEYWORDS = [
   'connexion', 'application', 'terminal', 'parametre',
   //---Mot clé
   'maGistor', 'Logys', 'WMS', 'WTS', 'LM', 'Odatio', 'Exotec', 'TDI', 'LMD',
+  //DEMO
+  'StockMaster','Demo'
 ];
 
 export function isLogisticsRelated(question: string): boolean {
