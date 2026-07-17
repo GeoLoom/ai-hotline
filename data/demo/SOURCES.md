@@ -7,6 +7,11 @@ utilisés uniquement à des fins de démonstration technique de ce projet
 
 Contenu sous licence CC-BY-SA 4.0 https://creativecommons.org/licenses/by-sa/4.0/deed.fr
 
+Modifications apportées : le contenu HTML original a été nettoyé
+(suppression des balises, scripts, éléments de navigation) et découpé
+en segments (chunks) pour l'indexation dans une base vectorielle, dans
+le cadre du pipeline d'ingestion documentaire de ce projet.
+
 Articles utilisés :
 Système de gestion d'entrepôts: https://fr.wikipedia.org/wiki/Système_de_gestion_d'entrepôts
 Entrepôt: https://fr.wikipedia.org/wiki/Entrepôt
