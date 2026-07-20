@@ -129,4 +129,13 @@ describe('sécurité et nettoyage', () => {
     const result = stripHtml(sql);
     expect(result).toBe(sql);
   });
+  it('nettoie correctement du HTML Wikipedia complexe (templates, data-mw imbriqués)', () => {
+  const html = `<span class="lang-en" lang="en" about="#mwt3" typeof="mw:Transclusion" id="mwGg" data-mw='{"parts":[{"template":{"target":{"wt":"lang","href":"./Modèle:Lang"},"params":{"1":{"wt":"en"},"2":{"wt":"&apos;&apos;[[cross-docking]]&apos;&apos;"}},"i":0}}]}'><i><a rel="mw:WikiLink" href="//fr.wikipedia.org/wiki/Cross-docking" title="Cross-docking">cross-docking</a></i></span>, l'allotissement`;
+
+  const result = stripHtml(html);
+
+  expect(result).toBe('cross-docking , l\'allotissement');
+  expect(result).not.toContain('<span');
+  expect(result).not.toContain('data-mw');
+});
 });

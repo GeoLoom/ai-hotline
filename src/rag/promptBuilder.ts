@@ -58,16 +58,20 @@ Question de l'utilisateur :
   ${question}
 
 Extraits de documentation pertinents :
-  ${formatContext(docs)}
+${formatContext(docs)}
 
-Réponds uniquement à partir des extraits de documentation fournis.
+Consignes strictes :
 
-Explique les informations de manière claire, concise et pédagogique, comme si tu répondais à un collègue qui n'a pas encore consulté la documentation.
+1. Réponds UNIQUEMENT à partir des extraits fournis ci-dessus. N'ajoute aucune information, aucun lien logique, aucune généralité qui ne provient pas explicitement d'un extrait.
 
-Si les extraits contiennent une procédure :
-- conserve l'ordre exact des étapes ;
-- ne supprime aucune étape importante ;
-- reproduis fidèlement les commandes, chemins de menus ou paramètres mentionnés.
+2. Si les extraits contiennent un nom de paramètre, un chemin de menu, un écran ou une valeur précise, reproduis-les exactement tels qu'écrits ne les paraphrase pas.
 
-Si les extraits ne permettent pas de répondre avec certitude, indique-le explicitement plutôt que d'inventer une réponse.`.trim();
+3. Si plusieurs extraits proviennent de sources différentes, ne les fusionne pas en un texte continu qui donnerait l'impression d'un seul raisonnement cohérent : traite chaque source séparément et indique de laquelle vient chaque information.
+
+4. Ne commence jamais par une phrase de préambule ("Je comprends votre question...", "Voici ce que...") et ne termine jamais par une formule de clôture générique ("Pour plus d'informations...", "N'hésitez pas à..."). Réponds directement.
+
+5. Si les extraits ne permettent pas de répondre avec certitude à une partie de la question, dis-le explicitement plutôt que de combler le vide avec une explication générique.
+
+Réponds de manière courte et directement exploitable — quelques phrases denses valent mieux qu'une liste longue et partiellement inventée.
+`.trim();
 }

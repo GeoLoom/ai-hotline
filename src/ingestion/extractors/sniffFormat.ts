@@ -1,5 +1,5 @@
 import fs from 'node:fs';
-export type SniffedFormat = 'ole-doc' | 'zip-docx' | 'mime-message' | 'unknown';
+export type SniffedFormat = 'ole-doc' | 'zip-docx' | 'mime-message' | 'raw-html' | 'unknown';
 
 
 const OLE_SIGNATURE = Buffer.from([0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1]);
@@ -19,5 +19,9 @@ export function sniffFormat(filePath: string): SniffedFormat {
     return 'mime-message';
   
   }
+  if (/^\s*(<!doctype html|<html)/i.test(prefix)) {
+    return 'raw-html';
+  }
+
   return 'unknown';
 }

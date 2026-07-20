@@ -5,7 +5,6 @@ interface RateLimitOptions {
   max: number;
 }
 
-// TODO : Faire des test quand on sera connecter à SAVOYE D, MIR et autre, ç
 export function rateLimiter({ windowMs, max }: RateLimitOptions): MiddlewareHandler {
   const hits = new Map<string, { count: number; resetAt: number }>();
 

@@ -25,8 +25,9 @@ export async function generateAnswer(prompt: string): Promise<string> {
     body: JSON.stringify({
       model: config.ollamaChatModel,
       prompt,
-      stream: false
-    })
+      stream: false,
+      stop: ["Question de l'utilisateur"],
+    }),
   });
 
   if (!response.ok) {
