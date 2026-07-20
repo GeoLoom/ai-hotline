@@ -13,7 +13,7 @@ const LOGISTICS_KEYWORDS = [
   'reception', 'commande', 'prelevement', 'picking', 'inventaire',
   'quai', 'chariot', 'entrepot', 'pool', 'article', 'transporteur',
   'AFFRÉTEUR', 'ALVÉOLE', 'ALLOTMENT', 'REQUIREMENTS', 'SHIPPING',
-  'SUPPLY CHAIN', 'EAN', 'CONTAINER', 'CROSS DOCKING', 'EDI',
+  'SUPPLY CHAIN', 'EAN', 'CONTAINER', 'CROSS DOCKING', 'EDI', 'cross-docking','co-packing','entrepôt','entrepot','slotting',
   //---Technique
   'scanner', 'radio', 'ecran', 'erreur', 'bug', 'latence', 'lock',
   'pool', 'wms', 'imprimante', 'etiquette', 'reseau', 'serveur',
