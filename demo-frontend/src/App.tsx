@@ -14,6 +14,8 @@ interface ChatMessage {
   role: 'user' | 'assistant' | 'error';
   content: string;
   sources?: AnswerSourceItem[];
+  question?: string;
+  feedbackStatus?: 'sending' | 'sent' | 'error';
 }
 
 interface AnswerResponse {
@@ -49,11 +51,13 @@ export default function App() {
   const settingsToggleRef = useRef<HTMLButtonElement>(null);
   const isFirstSettingsRender = useRef(true);
 
+  
   useEffect(() => {
     fetch('/health')
       .then((res) => setHealth(res.ok ? 'ok' : 'down'))
       .catch(() => setHealth('down'));
   }, []);
+
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
@@ -129,6 +133,7 @@ export default function App() {
             role: 'assistant',
             content: answerData.answer,
             sources: answerData.sources,
+            question: trimmed,
           },
         ]);
       }
@@ -179,7 +184,39 @@ export default function App() {
       await navigator.clipboard.writeText(message.content);
       setCopiedId(message.id);
     } catch {
+    }
+  }
 
+  async function handleFeedback(message: ChatMessage, rating: number) {
+    if (!message.question) return;
+
+    setMessages((prev) =>
+      prev.map((m) => (m.id === message.id ? { ...m, feedbackStatus: 'sending' } : m))
+    );
+
+    try {
+      const res = await fetch('/feedback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + token,
+        },
+        body: JSON.stringify({
+          question: message.question,
+          answer: message.content,
+          rating,
+        }),
+      });
+
+      if (!res.ok) throw new Error('Échec de l\'envoi');
+
+      setMessages((prev) =>
+        prev.map((m) => (m.id === message.id ? { ...m, feedbackStatus: 'sent' } : m))
+      );
+    } catch {
+      setMessages((prev) =>
+        prev.map((m) => (m.id === message.id ? { ...m, feedbackStatus: 'error' } : m))
+      );
     }
   }
 
@@ -290,6 +327,34 @@ export default function App() {
                 >
                   {copiedId === m.id ? 'Copié !' : 'Copier'}
                 </button>
+              )}
+              {m.role === 'assistant' && m.question && (
+                <div className="feedback-row">
+                  {m.feedbackStatus === 'sent' ? (
+                    <span className="feedback-thanks">Merci pour votre retour !</span>
+                  ) : (
+                    <>
+                      <span className="feedback-label">Cette réponse vous a-t-elle aidé ?</span>
+                      <button
+                        type="button"
+                        className="feedback-button"
+                        aria-label="Réponse utile"
+                        disabled={m.feedbackStatus === 'sending'}
+                        onClick={() => handleFeedback(m, 5)}>👍
+                      </button>
+                      <button
+                        type="button"
+                        className="feedback-button"
+                        aria-label="Réponse pas utile"
+                        disabled={m.feedbackStatus === 'sending'}
+                        onClick={() => handleFeedback(m, 1)}>👎
+                      </button>
+                      {m.feedbackStatus === 'error' && (
+                        <span className="feedback-error">Échec de l'envoi</span>
+                      )}
+                    </>
+                  )}
+                </div>
               )}
             </div>
           </div>

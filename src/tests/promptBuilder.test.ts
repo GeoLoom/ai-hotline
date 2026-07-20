@@ -77,6 +77,6 @@ describe('buildDocsSupportPrompt', () => {
 
   it('demande de ne pas résumer les étapes précises', () => {
     const prompt = buildDocsSupportPrompt('question', []);
-    expect(prompt).toContain('ne supprime aucune étape importante');
+    expect(prompt).toContain('reproduis-les exactement tels qu\'écrits');
   });
 });

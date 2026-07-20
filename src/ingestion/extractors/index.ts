@@ -2,6 +2,7 @@ import { extractDocText } from './docExtractor.js';
 import { extractDocxText } from './docxExtractor.js';
 import { sniffFormat, type SniffedFormat } from './sniffFormat.js';
 import { extractConfluenceEmailText } from './confluenceEmailExtractor.js';
+import { extractHtmlFileText } from './htmlFileExtractor.js';
 
 export type Extractor = (filePath: string) => Promise<string>;
 
@@ -9,6 +10,7 @@ const extractorsByFormat: Record<SniffedFormat, Extractor | undefined> = {
   'ole-doc': extractDocText,
   'zip-docx': extractDocxText,
   'mime-message': extractConfluenceEmailText,
+  'raw-html': extractHtmlFileText,
   unknown: undefined,
 };
 

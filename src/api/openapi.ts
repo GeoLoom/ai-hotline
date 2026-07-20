@@ -24,6 +24,20 @@ registry.registerPath({
 
 registry.registerPath({
   method: 'post',
+  path: '/v1/answer/docs',
+  summary: 'Poser une question sur la documentation interne',
+  security: [{ bearerAuth: [] }],
+  request: { body: { content: { 'application/json': { schema: answerSchema } } } },
+  responses: {
+    200: { description: 'Réponse générée à partir de la documentation' },
+    400: { description: 'Requête invalide' },
+    401: { description: 'Authentification manquante ou invalide' },
+    429: { description: 'Trop de requêtes' },
+  },
+});
+
+registry.registerPath({
+  method: 'post',
   path: '/v1/feedback',
   summary: 'Envoyer un retour utilisateur sur une réponse',
   security: [{ bearerAuth: [] }],

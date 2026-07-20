@@ -1,0 +1,141 @@
+{
+  "documents": [
+    {
+      "id": 90001001,
+      "groupe": "SUPPORT DEMO",
+      "site": "Entrepôt Nord",
+      "application": "StockMaster",
+      "num_incident": 90001001,
+      "date_creation": "2026-06-10T09:15:00Z",
+      "provenance": "Demo",
+      "commentaire": "Colis destine a un flux de cross-docking stocke par erreur au lieu d'etre redirige directement vers le quai d'expedition.",
+      "echange_client": [
+        "Le colis 5512090 aurait du partir en cross-dock direct (pas de mise en stock) mais il a ete range en rayon comme un colis standard.",
+        "Colis retire du rayonnage et reachemine vers le quai d'expedition, merci."
+      ],
+      "echange_tech": [
+        "Verification : le flag CROSSDOCK_ELIGIBLE du colis 5512090 etait a 0 au lieu de 1, provoquant son traitement comme une reception standard.\nSQL> select id_colis, flag_crossdock, id_e_col from colis where id_colis = 5512090;\nSQL> update colis set flag_crossdock = 1, id_e_col = 95 where id_colis = 5512090;\n1 row updated.\nColis repris manuellement et reachemine vers le quai d'expedition sans passer par le stockage."
+      ],
+      "mdate": "2026-06-10T09:45:00Z"
+    },
+    {
+      "id": 90001002,
+      "groupe": "SUPPORT DEMO",
+      "site": "Entrepôt Sud",
+      "application": "StockMaster",
+      "num_incident": 90001002,
+      "date_creation": "2026-06-11T14:02:00Z",
+      "provenance": "Demo",
+      "commentaire": "Reaffectation automatique d'emplacement (slotting) a place deux references incompatibles sur le meme casier, conflit de stockage.",
+      "echange_client": [
+        "Depuis la derniere campagne de slotting automatique, la reference REF-77410 et REF-77411 pointent toutes les deux vers l'emplacement B-12-04, impossible de valider la reception."
+      ],
+      "echange_tech": [
+        "Le moteur de slotting a recalcule les emplacements sans purger l'ancienne affectation de REF-77410 avant d'attribuer B-12-04 a REF-77411.\nSQL> select reference, emplacement from affectation_emplacement where emplacement = 'B-12-04';\nSQL> update affectation_emplacement set emplacement = 'B-12-09' where reference = 'REF-77410';\n1 row updated.\nConflit resolu, REF-77410 reaffectee sur un emplacement libre. Recommandation : purger les anciennes affectations avant chaque campagne de slotting."
+      ],
+      "mdate": "2026-06-11T14:30:00Z"
+    },
+    {
+      "id": 90001003,
+      "groupe": "SUPPORT DEMO",
+      "site": "Entrepôt Nord",
+      "application": "StockMaster",
+      "num_incident": 90001003,
+      "date_creation": "2026-06-12T08:30:00Z",
+      "provenance": "Demo",
+      "commentaire": "Commande de kitting expediee avec un composant manquant, le kit assemble ne correspond pas a la nomenclature attendue.",
+      "echange_client": [
+        "Le kit KIT-2201 livre au client ne contient que 2 composants sur les 3 attendus d'apres la nomenclature, manque le composant REF-90044."
+      ],
+      "echange_tech": [
+        "Analyse de l'ordre de kitting KO-33871 :\nSQL> select composant, quantite_prevue, quantite_prelevee from ligne_kitting where ordre = 'KO-33871';\nLa ligne REF-90044 avait une quantite_prelevee a 0 suite a une rupture de stock non signalee au poste d'assemblage.\nCorrectif : alerte de rupture ajoutee au poste de kitting pour bloquer la validation si une ligne n'est pas completement prelevee. Kit complete et reexpedie."
+      ],
+      "mdate": "2026-06-12T11:10:00Z"
+    },
+    {
+      "id": 90001004,
+      "groupe": "SUPPORT DEMO",
+      "site": "Entrepôt Sud",
+      "application": "StockMaster",
+      "num_incident": 90001004,
+      "date_creation": "2026-06-13T10:05:00Z",
+      "provenance": "Demo",
+      "commentaire": "Ecart detecte lors d'un inventaire tournant sur la zone de co-packing, quantite theorique superieure a la quantite reelle comptee.",
+      "echange_client": [
+        "Inventaire tournant de la zone co-packing C3 : ecart de 9 unites sur REF-65210, quantite theorique 40, quantite reelle comptee 31."
+      ],
+      "echange_tech": [
+        "Analyse des mouvements sur REF-65210 des 5 derniers jours en zone C3 :\nSQL> select * from mouvement_stock where reference = 'REF-65210' and zone = 'C3' order by date_mouvement desc;\n3 operations de co-packing avaient consomme la reference sans decrementer le stock source (bug de synchronisation entre le poste de co-packing et le stock).\nCorrectif applique :\nupdate stock set quantite_theorique = 31 where reference = 'REF-65210' and zone = 'C3';\nRegularisation validee. Correctif logiciel demande a l'editeur pour la synchronisation poste de co-packing / stock."
+      ],
+      "mdate": "2026-06-13T11:40:00Z"
+    },
+    {
+      "id": 90001005,
+      "groupe": "SUPPORT DEMO",
+      "site": "Entrepôt Nord",
+      "application": "StockMaster",
+      "num_incident": 90001005,
+      "date_creation": "2026-06-14T16:40:00Z",
+      "provenance": "Demo",
+      "commentaire": "Le WMS plante systematiquement au moment de la validation du picking depuis la mise a jour de la nuit derniere.",
+      "echange_client": [
+        "Depuis ce matin, valider une ligne de picking sur le terminal radio poste 7 fait planter l'application avec une erreur ecran blanc."
+      ],
+      "echange_tech": [
+        "Consultation des logs applicatifs post mise a jour :\nErreur NullPointerException dans le module de validation de picking, lie a un nouveau champ obligatoire (poids_reel) non initialise pour les articles crees avant la mise a jour.\nCorrectif applique :\nSQL> update article set poids_reel = poids_theorique where poids_reel is null;\nRedemarrage du service applicatif. Validation du picking a nouveau fonctionnelle. Correctif definitif prevu dans le prochain patch editeur."
+      ],
+      "mdate": "2026-06-14T17:20:00Z"
+    },
+    {
+      "id": 90001006,
+      "groupe": "SUPPORT DEMO",
+      "site": "Entrepôt Sud",
+      "application": "StockMaster",
+      "num_incident": 90001006,
+      "date_creation": "2026-06-15T09:00:00Z",
+      "provenance": "Demo",
+      "commentaire": "Colis expedie sans historique de tracabilite, impossible de retrouver les etapes de preparation dans le systeme.",
+      "echange_client": [
+        "Le colis 5518820 a bien ete livre au client mais aucun historique de mouvement n'apparait dans la fiche tracabilite du colis."
+      ],
+      "echange_tech": [
+        "Verification de la table de tracabilite :\nSQL> select * from tracabilite_colis where id_colis = 5518820;\nAucune ligne trouvee : le declenchement de l'enregistrement de tracabilite avait ete desactive temporairement lors d'une operation de maintenance et jamais reactive.\nCorrectif applique :\nupdate configuration set tracabilite_active = 1 where module = 'EXPEDITION';\nTracabilite reactivee. Les colis expedies pendant la periode de desactivation resteront sans historique complet, a signaler au client si necessaire."
+      ],
+      "mdate": "2026-06-15T09:50:00Z"
+    },
+    {
+      "id": 90001007,
+      "groupe": "SUPPORT DEMO",
+      "site": "Entrepôt Nord",
+      "application": "StockMaster",
+      "num_incident": 90001007,
+      "date_creation": "2026-06-16T13:20:00Z",
+      "provenance": "Demo",
+      "commentaire": "Erreur lors d'une operation de co-packing : deux references distinctes ont ete associees par erreur dans le meme colis final.",
+      "echange_client": [
+        "La commande CMD-44120 en co-packing contient la reference REF-11002 au lieu de REF-11003 normalement prevue pour ce client."
+      ],
+      "echange_tech": [
+        "Verification de l'ordre de co-packing OCP-9012 :\nSQL> select * from ligne_co_packing where ordre = 'OCP-9012';\nErreur de saisie operateur au poste de co-packing : mauvaise reference scannee lors de l'association des articles.\nCorrectif : colis recompose avec la bonne reference REF-11003, reexpedition immediate. Rappel procedure fait aupres de l'operateur concerne sur le double-scan obligatoire avant validation."
+      ],
+      "mdate": "2026-06-16T13:55:00Z"
+    },
+    {
+      "id": 90001008,
+      "groupe": "SUPPORT DEMO",
+      "site": "Entrepôt Sud",
+      "application": "StockMaster",
+      "num_incident": 90001008,
+      "date_creation": "2026-06-17T11:00:00Z",
+      "provenance": "Demo",
+      "commentaire": "Zone de cross-docking saturee, plusieurs colis en attente de reacheminement provoquent des retards d'expedition.",
+      "echange_client": [
+        "La zone de cross-docking Q2 est completement engorgee depuis ce matin, une dizaine de colis en attente de reacheminement direct."
+      ],
+      "echange_tech": [
+        "Analyse de la charge de la zone Q2 :\nSQL> select count(*) from colis where zone_attente = 'Q2' and flag_crossdock = 1;\n14 colis en attente, capacite nominale de la zone : 8.\nCorrectif temporaire : reaffectation de 6 colis vers la zone de cross-docking Q3 via le module de slotting dynamique.\nupdate colis set zone_attente = 'Q3' where zone_attente = 'Q2' and flag_crossdock = 1 and rownum <= 6;\nFlux reequilibre, retards resorbes en fin de journee. Recommandation : revoir le dimensionnement de la zone Q2 aux heures de pointe."
+      ],
+      "mdate": "2026-06-17T11:35:00Z"
+    }
+  ]
+}

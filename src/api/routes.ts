@@ -11,6 +11,7 @@ import { insertFeedback } from '../db.js';
 import { checkAuth } from './checkAuth.js';
 import { openApiDocument } from './openapi.js';
 import { serveStatic } from '@hono/node-server/serve-static';
+import { swaggerUI } from '@hono/swagger-ui';
 
 const app = new Hono();
 const v1 = new Hono();
@@ -111,6 +112,7 @@ v1.post('/ingest', async (c) => {
 
 app.get('/health', (c) => c.json({ status: 'ok' }));
 app.get('/openapi.json', (c) => c.json(openApiDocument));
+app.get('/docs', swaggerUI({ url: '/openapi.json' }));
 
 app.get('/demo', (c) => {
   const html = fs.readFileSync(path.join(process.cwd(), 'public/demo/index.html'), 'utf-8');
