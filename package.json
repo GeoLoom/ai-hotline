@@ -11,6 +11,7 @@
     "ingest": "tsx src/ingestion/ingestIncidents.ts",
     "ingest:docs": "tsx src/ingestion/ingestDocs.ts",
     "perf:check": "tsx scripts/perf-check.ts",
+    "monitor": "tsx scripts/monitor.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"
