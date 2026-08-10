@@ -12,6 +12,7 @@ import { checkAuth } from './checkAuth.js';
 import { openApiDocument } from './openapi.js';
 import { serveStatic } from '@hono/node-server/serve-static';
 import { swaggerUI } from '@hono/swagger-ui';
+import { config } from '../config.js';
 
 const app = new Hono();
 const v1 = new Hono();
@@ -111,6 +112,28 @@ v1.post('/ingest', async (c) => {
 
 
 app.get('/health', (c) => c.json({ status: 'ok' }));
+
+app.get('/status', async (c) => {
+  const checks: Record<string, 'ok' | 'down'> = {};
+
+  try {
+    const res = await fetch(`${config.ollamaBaseUrl}/api/tags`, { signal: AbortSignal.timeout(2000) });
+    checks.ollama = res.ok ? 'ok' : 'down';
+  } catch {
+    checks.ollama = 'down';
+  }
+
+  try {
+    const res = await fetch(`${config.chromaUrl}/api/v2/heartbeat`, { signal: AbortSignal.timeout(2000) });
+    checks.chromadb = res.ok ? 'ok' : 'down';
+  } catch {
+    checks.chromadb = 'down';
+  }
+
+  const allOk = Object.values(checks).every((s) => s === 'ok');
+
+  return c.json({ status: allOk ? 'ok' : 'degraded', checks }, allOk ? 200 : 503);
+});
 app.get('/openapi.json', (c) => c.json(openApiDocument));
 app.get('/docs', swaggerUI({ url: '/openapi.json' }));
 
