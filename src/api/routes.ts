@@ -13,6 +13,8 @@ import { openApiDocument } from './openapi.js';
 import { serveStatic } from '@hono/node-server/serve-static';
 import { swaggerUI } from '@hono/swagger-ui';
 import { config } from '../config.js';
+import { reportSchema } from './schemas.js';
+import { sendAlertEmail } from '../utils/mailer.js';
 
 const app = new Hono();
 const v1 = new Hono();
@@ -133,6 +135,21 @@ app.get('/status', async (c) => {
   const allOk = Object.values(checks).every((s) => s === 'ok');
 
   return c.json({ status: allOk ? 'ok' : 'degraded', checks }, allOk ? 200 : 503);
+});
+
+app.post('/report',rateLimiter({windowMs:60_000,max:5}),async(c) => {
+  const body = await parseJsonBody(c);
+  if(!body.ok){
+    return c.json({error:'Invalid JSON body'},400);
+  }
+  const parsed = reportSchema.safeParse(body.data);
+  if(!parsed.success)
+  {return c.json({error:parsed.error.flatten()},400)}
+  await sendAlertEmail(
+    'Signalement utilisateur',
+    parsed.data.message
+  )
+  return c.json({status:'ok',message:'Signalement envoyé'});
 });
 app.get('/openapi.json', (c) => c.json(openApiDocument));
 app.get('/docs', swaggerUI({ url: '/openapi.json' }));

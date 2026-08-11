@@ -1,9 +1,12 @@
+import { sendAlertEmail } from '../src/utils/mailer.js';
+
 const STATUS_URL = process.env.MONITOR_URL ?? 'http://localhost:3000/status';
 const INTERVAL_MS = 30_000;
 const RESPONSE_TIME_ALERT_MS = 3000;
 const CONSECUTIVE_FAILURES_ALERT = 2;
 
 let consecutiveFailures = 0;
+let alertSentForCurrentOutage = false;
 
 async function checkOnce() {
   const start = Date.now();
@@ -16,7 +19,14 @@ async function checkOnce() {
       consecutiveFailures++;
       logAlert(`Service dégradé (HTTP ${res.status}) : ${JSON.stringify(body.checks)}`);
     } else {
+      if (alertSentForCurrentOutage) {
+        await sendAlertEmail(
+          'Service rétabli',
+          `Le service répond à nouveau normalement depuis ${new Date().toISOString()}.`
+        );
+      }
       consecutiveFailures = 0;
+      alertSentForCurrentOutage = false;
       console.log(`[${new Date().toISOString()}] OK (${duration}ms)`);
     }
 
@@ -28,8 +38,13 @@ async function checkOnce() {
     logAlert(`Service injoignable : ${error instanceof Error ? error.message : String(error)}`);
   }
 
-  if (consecutiveFailures >= CONSECUTIVE_FAILURES_ALERT) {
+  if (consecutiveFailures >= CONSECUTIVE_FAILURES_ALERT && !alertSentForCurrentOutage) {
+    alertSentForCurrentOutage = true;
     logAlert(`ALERTE : ${consecutiveFailures} échecs consécutifs`);
+    await sendAlertEmail(
+      'Alerte — service indisponible',
+      `${consecutiveFailures} échecs consécutifs détectés.\nDernière vérification : ${new Date().toISOString()}\nURL surveillée : ${STATUS_URL}`
+    );
   }
 }
 
