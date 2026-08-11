@@ -18,5 +18,14 @@ export const config = {
   dbPath: process.env.DB_PATH ?? 'vector.db',
   
   //Token partagé unique, sans expiration : toutes les interconnexions utilisent la même valeur. 
-  apiToken: process.env.API_TOKEN
+  apiToken: process.env.API_TOKEN,
+  smtp: {
+    host: process.env.SMTP_HOST,
+    port: Number(process.env.SMTP_PORT ?? 587),
+    secure: process.env.SMTP_SECURE === 'true',
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+    
+    alertTo: process.env.ALERT_EMAIL_TO,
+  },
 };

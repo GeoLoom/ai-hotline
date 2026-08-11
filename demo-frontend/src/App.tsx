@@ -27,6 +27,11 @@ interface ErrorResponse {
   error: string | Record<string, unknown>;
 }
 
+interface StatusChecks {
+  ollama: 'ok' | 'down';
+  chromadb: 'ok' | 'down';
+}
+
 let messageCounter = 0;
 function nextId(): string {
   messageCounter += 1;
@@ -41,8 +46,12 @@ export default function App() {
   const [question, setQuestion] = useState('');
   const [loading, setLoading] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [contactOpen, setContactOpen] = useState(false);
+  const [contactMessage, setContactMessage] = useState('');
+  const [contactStatus, setContactStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [health, setHealth] = useState<HealthStatus>('checking');
+  const [serviceChecks, setServiceChecks] = useState<StatusChecks | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -53,10 +62,19 @@ export default function App() {
 
   
   useEffect(() => {
-    fetch('/health')
-      .then((res) => setHealth(res.ok ? 'ok' : 'down'))
+  function checkStatus() {
+    fetch('/status')
+      .then((res) => res.json())
+      .then((body) => {
+        setHealth(body.status === 'ok' ? 'ok' : 'down');
+        setServiceChecks(body.checks);
+      })
       .catch(() => setHealth('down'));
-  }, []);
+  }
+  checkStatus();
+  const interval = setInterval(checkStatus, 15000);
+  return () => clearInterval(interval);
+}, []);
 
 
   useEffect(() => {
@@ -81,6 +99,24 @@ export default function App() {
     return () => clearTimeout(timeout);
   }, [copiedId]);
 
+
+  async function handleContactSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (contactMessage.trim().length < 3) return;
+    setContactStatus('sending');
+    try {
+    const res = await fetch('/report', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message: contactMessage.trim() }),
+    });
+    if (!res.ok) throw new Error('failed');
+    setContactStatus('sent');
+    setContactMessage('');
+    } catch {
+    setContactStatus('error');
+    }
+  }
   async function sendQuestion() {
     const trimmed = question.trim();
     if (trimmed.length < 3 || loading) return;
@@ -241,6 +277,24 @@ export default function App() {
             }
             title={health === 'ok' ? 'Service disponible' : health === 'down' ? 'Service indisponible' : 'Vérification…'}
           />
+          {serviceChecks && (
+            <div className="service-checks">
+              <span
+                className={'service-dot ' + serviceChecks.ollama}
+                role="status"
+                aria-label={'Ollama : ' + (serviceChecks.ollama === 'ok' ? 'disponible' : 'indisponible')}
+                title={'Ollama : ' + (serviceChecks.ollama === 'ok' ? 'disponible' : 'indisponible')}
+              />
+              <span className="service-label">Ollama</span>
+              <span
+                className={'service-dot ' + serviceChecks.chromadb}
+                role="status"
+                aria-label={'ChromaDB : ' + (serviceChecks.chromadb === 'ok' ? 'disponible' : 'indisponible')}
+                title={'ChromaDB : ' + (serviceChecks.chromadb === 'ok' ? 'disponible' : 'indisponible')}
+              />
+              <span className="service-label">ChromaDB</span>
+            </div>
+          )}
         </div>
 
         <div className="header-actions">
@@ -261,6 +315,9 @@ export default function App() {
             onClick={() => setSettingsOpen((v) => !v)}
           >
             Réglages
+          </button>
+          <button type="button" className="text-button" onClick={() => setContactOpen((v) => !v)}>
+            Signaler un problème
           </button>
         </div>
       </header>
@@ -297,6 +354,25 @@ export default function App() {
           </div>
         </div>
       )}
+
+      {contactOpen && (
+        <div
+         className="settings-panel"
+         id="contact-panel"
+         role="region"
+         aria-label="Signaler un problème">
+           <form onSubmit={handleContactSubmit}>
+              <div className="field">
+                <label htmlFor="contact-message">Décrivez le problème</label>
+                 <textarea id="contact-message" rows={4} value={contactMessage} onChange={(e) => setContactMessage(e.target.value)} />
+              </div>
+            <button type="submit"
+              disabled={contactStatus === 'sending'}>
+              {contactStatus === 'sent' ? 'Envoyer' : 'Envoyer'}
+            </button>
+            {contactStatus === 'error' && <p className="feedback-error">Échec de l'envoi</p>} 
+            </form>
+        </div> )}
 
       <main className="chat" role="log" aria-live="polite" aria-label="Échange avec l'assistant">
         {messages.length === 0 && (

@@ -397,6 +397,32 @@ header.top .mark {
   cursor: not-allowed;
 }
 
+.service-checks {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-left: 0.75rem;
+  padding-left: 0.75rem;
+  border-left: 1px solid var(--line);
+}
+
+.service-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #b7bcc2;
+  display: inline-block;
+}
+.service-dot.ok { background: #1f8a4c; }
+.service-dot.down { background: var(--red); }
+
+.service-label {
+  font-size: 0.72rem;
+  color: var(--ink-soft);
+  margin-right: 0.4rem;
+}
+.service-label:last-child { margin-right: 0; }
+
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
 }

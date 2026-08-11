@@ -20,6 +20,7 @@
     "@types/better-sqlite3": "^7.6.13",
     "@types/mailparser": "^3.4.6",
     "@types/node": "^25.4.0",
+    "@types/nodemailer": "^8.0.1",
     "@vitest/coverage-v8": "^4.1.10",
     "esbuild": "^0.28.1",
     "npm-run-all2": "^6.2.0",
@@ -38,6 +39,7 @@
     "hono": "^4.12.7",
     "mailparser": "^3.9.14",
     "mammoth": "^1.12.0",
+    "nodemailer": "^9.0.5",
     "word-extractor": "^1.0.4",
     "zod": "^4.4.3"
   }
