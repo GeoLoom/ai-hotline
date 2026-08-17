@@ -42,7 +42,7 @@ async function checkOnce() {
     alertSentForCurrentOutage = true;
     logAlert(`ALERTE : ${consecutiveFailures} échecs consécutifs`);
     await sendAlertEmail(
-      'Alerte — service indisponible',
+      'Alerte service indisponible',
       `${consecutiveFailures} échecs consécutifs détectés.\nDernière vérification : ${new Date().toISOString()}\nURL surveillée : ${STATUS_URL}`
     );
   }

@@ -67,3 +67,8 @@ fusionnée, dans l'ordre chronologique réel du dépôt.
 
 - Formulaire de signalement accessible sans authentification
   (POST /report)
+
+## [1.0.0]  2026-08-17
+
+Première version stable du projet : API RAG fonctionnelle, interface
+de démonstration, supervision et alerte, harnais de tests complet.
