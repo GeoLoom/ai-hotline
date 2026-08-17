@@ -1,6 +1,7 @@
 {
   "name": "ai-hotline",
   "type": "module",
+  "version": "1.0.0",
   "scripts": {
     "build": "tsc",
     "zip": "zip -j lambda.zip dist/index.js",
@@ -11,6 +12,7 @@
     "ingest": "tsx src/ingestion/ingestIncidents.ts",
     "ingest:docs": "tsx src/ingestion/ingestDocs.ts",
     "perf:check": "tsx scripts/perf-check.ts",
+    "monitor": "tsx scripts/monitor.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"
@@ -19,6 +21,7 @@
     "@types/better-sqlite3": "^7.6.13",
     "@types/mailparser": "^3.4.6",
     "@types/node": "^25.4.0",
+    "@types/nodemailer": "^8.0.1",
     "@vitest/coverage-v8": "^4.1.10",
     "esbuild": "^0.28.1",
     "npm-run-all2": "^6.2.0",
@@ -28,8 +31,7 @@
   },
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "^8.5.0",
-    "@chroma-core/default-embed": "^0.1.9",
-    "@hono/node-server": "^1.19.11",
+    "@hono/node-server": "^2.1.0",
     "@hono/swagger-ui": "^0.6.1",
     "axios": "^1.13.5",
     "better-sqlite3": "^12.6.2",
@@ -38,6 +40,7 @@
     "hono": "^4.12.7",
     "mailparser": "^3.9.14",
     "mammoth": "^1.12.0",
+    "nodemailer": "^9.0.5",
     "word-extractor": "^1.0.4",
     "zod": "^4.4.3"
   }
