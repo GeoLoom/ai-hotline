@@ -1,39 +1,33 @@
-name: CI
+name: Release
 
 on:
   push:
-    branches: [ main, develop ]
-  pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
-  build-and-test:
+  tag-release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
-      - name: Checkout du code
+      - name: Récupération du code
         uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
-          
-      - name: Aligner npm sur la version locale du projet
-        run: npm install -g npm@11.6.1
+          fetch-depth: 0
 
-      - name: Installation des dépendances
-        run: npm ci
+      - name: Lire la version depuis package.json
+        id: version
+        run: echo "version=v$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
 
-      - name: Vérification TypeScript
-        run: npx tsc --noEmit
-
-      - name: Linting
-        run: npx eslint src/ --ext .ts || true
-
-      - name: Couverture de tests
-        run: npm run test:coverage
-
-      - name: Audit de sécurité des dépendances
-        run: npm audit --audit-level=high
+      - name: Créer la Release et le tag si cette version est nouvelle
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "${{ steps.version.outputs.version }}" >/dev/null 2>&1; then
+            echo "La version ${{ steps.version.outputs.version }} existe déjà, rien à faire."
+          else
+            gh release create "${{ steps.version.outputs.version }}" \
+              --title "${{ steps.version.outputs.version }}" \
+              --generate-notes
+          fi
