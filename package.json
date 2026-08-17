@@ -1,6 +1,7 @@
 {
   "name": "ai-hotline",
   "type": "module",
+  "version": "1.0.0",
   "scripts": {
     "build": "tsc",
     "zip": "zip -j lambda.zip dist/index.js",
